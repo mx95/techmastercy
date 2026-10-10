@@ -127,15 +127,15 @@ export default function HomePage() {
     <>
       {/* 1. Value proposition */}
       <section className="hero-atmosphere relative overflow-hidden border-b border-white/10">
-        <Container className="relative grid items-center gap-10 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
-          <div>
+        <Container className="relative grid min-w-0 items-center gap-8 py-10 sm:gap-10 sm:py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
+          <div className="min-w-0">
             <p className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-accent-soft">
               TechmasterCY · Cyprus
             </p>
-            <h1 className="mt-3 max-w-xl text-balance font-display text-[1.85rem] font-semibold leading-tight text-white sm:mt-4 sm:text-4xl lg:text-5xl">
+            <h1 className="mt-3 max-w-xl text-balance font-display text-[1.7rem] font-semibold leading-tight text-white sm:mt-4 sm:text-4xl lg:text-5xl">
               Reliable payment integrations and business systems.
             </h1>
-            <p className="mt-4 max-w-lg text-base text-foreground-muted sm:mt-5 sm:text-lg">
+            <p className="mt-3 max-w-lg text-sm text-foreground-muted sm:mt-5 sm:text-lg">
               Practical help with online payments, APIs, automation and AI implementation for
               businesses in Cyprus—scoped clearly, tested properly and handed over so your team
               can run it.
@@ -311,11 +311,11 @@ export default function HomePage() {
               automated sales sequence. Indicative package prices are proposals until confirmed in a
               quote.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button href="/contact" size="lg">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button href="/contact" size="lg" className="w-full sm:w-auto">
                 Discuss Your Project
               </Button>
-              <Button href="/shop" variant="secondary" size="lg">
+              <Button href="/shop" variant="secondary" size="lg" className="w-full sm:w-auto">
                 View Digital Products
               </Button>
             </div>

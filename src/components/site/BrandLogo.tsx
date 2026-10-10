@@ -36,12 +36,12 @@ export function BrandLogo({
         alt=""
         width={48}
         height={48}
-        className="h-9 w-9 shrink-0 rounded-md object-contain sm:h-10 sm:w-10"
+        className="h-8 w-8 shrink-0 rounded-md object-contain sm:h-10 sm:w-10"
         priority={priority}
         aria-hidden
       />
       <span className="flex min-w-0 flex-col justify-center" aria-hidden="true">
-        <span className="truncate font-display text-[0.95rem] font-semibold leading-none tracking-tight sm:text-lg">
+        <span className="truncate font-display text-[0.9rem] font-semibold leading-none tracking-tight sm:text-lg">
           <span className="text-white">Techmaster</span>
           <span className="text-accent">CY</span>
         </span>

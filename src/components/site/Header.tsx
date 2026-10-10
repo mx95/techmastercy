@@ -73,7 +73,7 @@ export function Header() {
           <Button
             href="/contact"
             size="sm"
-            className="hidden min-h-11 sm:inline-flex"
+            className="!hidden min-h-11 md:!inline-flex"
           >
             Discuss Your Project
           </Button>

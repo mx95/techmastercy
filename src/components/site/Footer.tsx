@@ -48,7 +48,12 @@ export function Footer() {
           <p className="mt-1 text-xs text-foreground-muted">
             Primary market: Cyprus · Currency: EUR · Language: English
           </p>
-          <SocialLinks className="mt-4 flex flex-wrap gap-2" />
+          <div className="mt-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground-muted">
+              Follow
+            </p>
+            <SocialLinks className="mt-2 flex flex-wrap gap-2" />
+          </div>
         </div>
 
         <div>

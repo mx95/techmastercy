@@ -13,7 +13,7 @@ export function Container({
   return (
     <Tag
       className={clsx(
-        "mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8",
+        "mx-auto w-full min-w-0 max-w-6xl px-3 sm:px-6 lg:px-8",
         className,
       )}
     >

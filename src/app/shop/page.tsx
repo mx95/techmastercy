@@ -49,7 +49,7 @@ export default async function ShopPage({
   ]);
 
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Shop", path: "/shop" }]} />
       <SectionHeading
         className="mt-6"

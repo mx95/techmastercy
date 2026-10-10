@@ -27,7 +27,7 @@ const categoryOrder: ServiceCategory[] = [
 
 export default function ServicesPage() {
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs
         items={[
           { name: "Home", path: "/" },
@@ -51,7 +51,7 @@ export default function ServicesPage() {
             expectations.
           </p>
         </div>
-        <Button href="/services/ai-automation" className="mt-4 shrink-0 sm:mt-0">
+        <Button href="/services/ai-automation" className="mt-4 w-full shrink-0 sm:mt-0 sm:w-auto">
           Open AI & automation hub
         </Button>
       </div>
@@ -93,7 +93,7 @@ export default function ServicesPage() {
                     <Button
                       href={`/services/${service.slug}`}
                       variant="secondary"
-                      className="mt-4 shrink-0 md:mt-0"
+                      className="mt-4 w-full shrink-0 md:mt-0 md:w-auto"
                     >
                       View details
                     </Button>

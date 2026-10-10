@@ -1,6 +1,7 @@
 /**
  * Verified TechmasterCY social profiles only.
- * Source: https://techmaster.com.cy (Shopify footer, Oct 2026).
+ * Source: https://techmaster.com.cy Shopify header/footer social list (checked Oct 2026).
+ * Only Instagram is published on the live storefront — do not invent other profile URLs.
  */
 export type SocialLink = {
   platform: "linkedin" | "facebook" | "instagram" | "x" | "youtube" | "github";
