@@ -34,10 +34,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const products = await prisma.product.findMany({
-    where: { status: "PUBLISHED" },
-    select: { slug: true, updatedAt: true },
-  });
+  // Build-time / empty DBs must not fail the production image build.
+  let products: Array<{ slug: string; updatedAt: Date }> = [];
+  try {
+    products = await prisma.product.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true, updatedAt: true },
+    });
+  } catch {
+    products = [];
+  }
 
   const productRoutes = products.map((product) => ({
     url: `${base}/shop/${product.slug}`,

@@ -10,7 +10,7 @@ export function ProductGallery({
   images: string[];
   alt: string;
 }) {
-  const safe = images.length ? images : ["/images/brand/logo-dark.png"];
+  const safe = images.length ? images : ["/images/brand/logo-wordmark-on-light.png"];
   const [active, setActive] = useState(0);
 
   return (

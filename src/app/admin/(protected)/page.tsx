@@ -3,20 +3,32 @@ import { prisma } from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [products, published, orders, paidOrders, enquiries, newEnquiries] =
-    await Promise.all([
-      prisma.product.count(),
-      prisma.product.count({ where: { status: "PUBLISHED" } }),
-      prisma.order.count(),
-      prisma.order.count({ where: { status: "PAID" } }),
-      prisma.enquiry.count(),
-      prisma.enquiry.count({ where: { status: "NEW" } }),
-    ]);
+  const [
+    products,
+    published,
+    orders,
+    paidOrders,
+    enquiries,
+    newEnquiries,
+    inProgressEnquiries,
+  ] = await Promise.all([
+    prisma.product.count(),
+    prisma.product.count({ where: { status: "PUBLISHED" } }),
+    prisma.order.count(),
+    prisma.order.count({ where: { status: "PAID" } }),
+    prisma.enquiry.count(),
+    prisma.enquiry.count({ where: { status: "NEW" } }),
+    prisma.enquiry.count({ where: { status: "IN_PROGRESS" } }),
+  ]);
 
   const cards = [
     { label: "Products", value: products, hint: `${published} published` },
     { label: "Orders", value: orders, hint: `${paidOrders} paid` },
-    { label: "Enquiries", value: enquiries, hint: `${newEnquiries} new` },
+    {
+      label: "Enquiries",
+      value: enquiries,
+      hint: `${newEnquiries} new · ${inProgressEnquiries} in progress`,
+    },
   ];
 
   return (

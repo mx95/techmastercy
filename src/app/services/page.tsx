@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
+import { PaymentProvidersSection } from "@/components/site/PaymentProvidersSection";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import {
   serviceCategories,
@@ -12,9 +13,9 @@ import { createMetadata } from "@/lib/seo";
 import { formatEur } from "@/lib/money";
 
 export const metadata = createMetadata({
-  title: "Services",
+  title: "Services — payment integration, automation & AI Cyprus",
   description:
-    "Payment integrations, AI consulting, business automation and technical support for businesses in Cyprus.",
+    "Payment gateway integration Cyprus, API and webhook work, business process automation, AI consulting and scoped technical support.",
   path: "/services",
 });
 
@@ -53,6 +54,10 @@ export default function ServicesPage() {
         <Button href="/services/ai-automation" className="mt-4 shrink-0 sm:mt-0">
           Open AI & automation hub
         </Button>
+      </div>
+
+      <div className="mt-12">
+        <PaymentProvidersSection compact />
       </div>
 
       <div className="mt-12 space-y-12">

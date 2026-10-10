@@ -1,6 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
+import { BrandLogo } from "@/components/site/BrandLogo";
 import { Container } from "@/components/site/Container";
+import { SocialLinks } from "@/components/site/SocialLinks";
 import { petpal } from "@/content/petpal";
 import { siteConfig } from "@/lib/config";
 
@@ -31,24 +32,23 @@ export function Footer() {
     <footer className="mt-auto border-t border-white/10 bg-[#080d18]">
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-1">
-          <Image
-            src="/images/brand/logo-transparent.png"
-            alt={siteConfig.name}
-            width={160}
-            height={40}
-            className="h-8 w-auto"
-          />
+          <BrandLogo showTagline={false} />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-foreground-muted">
-            {siteConfig.description}
+            Payment integrations, automation and practical AI implementation for businesses in
+            Cyprus.
           </p>
-          <p className="mt-4 text-sm text-foreground-muted">
+          <p className="mt-4 text-sm">
             <a
               href={`mailto:${siteConfig.businessEmail}`}
-              className="text-accent-soft transition-colors hover:text-accent"
+              className="font-medium text-accent-soft transition-colors hover:text-accent"
             >
               {siteConfig.businessEmail}
             </a>
           </p>
+          <p className="mt-1 text-xs text-foreground-muted">
+            Primary market: Cyprus · Currency: EUR · Language: English
+          </p>
+          <SocialLinks className="mt-4 flex flex-wrap gap-2" />
         </div>
 
         <div>
@@ -94,11 +94,11 @@ export function Footer() {
               </li>
             ))}
           </ul>
-          <div className="mt-8">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-foreground">
-              Our other project
+          <div className="mt-8 border-t border-white/5 pt-6">
+            <h2 className="font-display text-xs font-semibold uppercase tracking-[0.14em] text-foreground-muted">
+              Our project
             </h2>
-            <p className="mt-3 text-sm text-foreground-muted">
+            <p className="mt-2 text-sm text-foreground-muted">
               <a
                 href={petpal.url}
                 target="_blank"
@@ -107,8 +107,8 @@ export function Footer() {
               >
                 {petpal.name}
               </a>
-              <span className="block mt-1 text-xs">
-                GPS trackers, NFC tags and pet-care tools — separate catalogue and checkout.
+              <span className="mt-1 block text-xs">
+                Separate pet-care platform — own catalogue and checkout.
               </span>
             </p>
           </div>
@@ -120,7 +120,7 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {siteConfig.legalName}. {siteConfig.domain}
           </p>
-          <p>Payment integrations, AI automation and developer tooling for Cyprus businesses.</p>
+          <p>Reliable payment systems and technical delivery for Cyprus businesses.</p>
         </Container>
       </div>
     </footer>

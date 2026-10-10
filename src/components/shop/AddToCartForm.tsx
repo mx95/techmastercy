@@ -56,7 +56,7 @@ export function AddToCartForm({
       productId: product.id,
       slug: product.slug,
       name: product.name,
-      image: product.images[0] || "/images/brand/logo-dark.png",
+      image: product.images[0] || "/images/brand/logo-wordmark-on-light.png",
       unitPriceCents: unitPrice,
       licenceOptionId: selectedLicence?.id,
       licenceName: selectedLicence?.name,

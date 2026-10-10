@@ -1,6 +1,7 @@
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
+import { PetPalCard } from "@/components/site/PetPalCard";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { createMetadata } from "@/lib/seo";
 
@@ -49,10 +50,13 @@ export default function AboutPage() {
         </p>
       </div>
       <div className="mt-8 flex flex-wrap gap-3">
-        <Button href="/contact">Request a quote</Button>
+        <Button href="/contact">Discuss Your Project</Button>
         <Button href="/services" variant="secondary">
-          Browse services
+          Explore Services
         </Button>
+      </div>
+      <div className="mt-12">
+        <PetPalCard compact />
       </div>
     </Container>
   );

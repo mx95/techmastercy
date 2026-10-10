@@ -40,6 +40,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
@@ -47,6 +48,26 @@
     color: var(--foreground);
     font-family: var(--font-source-sans), ui-sans-serif, sans-serif;
     min-height: 100%;
+    overflow-x: clip;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 2.75rem;
+  }
+
+  textarea {
+    min-height: 8rem;
   }
 
   h1,

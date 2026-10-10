@@ -8,6 +8,8 @@ RUN apt-get update -y \
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+# prisma.config.ts requires DATABASE_URL during postinstall `prisma generate`
+ENV DATABASE_URL="file:./build-placeholder.db"
 RUN npm ci
 
 FROM node:22.14.0-bookworm-slim AS builder
@@ -19,10 +21,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-# Prisma generate needs a URL; this file is not used at runtime.
+# Prisma generate / optional build-time queries use a throwaway SQLite file.
 ENV DATABASE_URL="file:./build-placeholder.db"
 # Keep prisma CLI available for entrypoint `db push` (listed under devDependencies).
 RUN npx prisma generate \
+  && npx prisma db push --skip-generate \
   && npm run build
 
 FROM node:22.14.0-bookworm-slim AS runner

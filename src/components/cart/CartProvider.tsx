@@ -38,8 +38,12 @@ type CartContextValue = {
 };
 
 const STORAGE_KEY = "tmc_cart_v1";
+const EMPTY_CART: CartLine[] = [];
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+let cachedRaw: string | null = null;
+let cachedLines: CartLine[] = EMPTY_CART;
 
 function lineKey(productId: string, licenceOptionId?: string) {
   return `${productId}::${licenceOptionId || ""}`;
@@ -59,24 +63,46 @@ function isCartLine(value: unknown): value is CartLine {
   );
 }
 
-function readCart(): CartLine[] {
-  if (typeof window === "undefined") return [];
+function parseCart(raw: string | null): CartLine[] {
+  if (!raw) return EMPTY_CART;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed.filter(isCartLine) : [];
+    if (!Array.isArray(parsed)) return EMPTY_CART;
+    const lines = parsed.filter(isCartLine);
+    return lines.length ? lines : EMPTY_CART;
   } catch {
-    return [];
+    return EMPTY_CART;
   }
 }
 
+/** Stable snapshot — must not allocate a new array when data is unchanged. */
+function getCartSnapshot(): CartLine[] {
+  if (typeof window === "undefined") return EMPTY_CART;
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+  if (raw === cachedRaw) return cachedLines;
+  cachedRaw = raw;
+  cachedLines = parseCart(raw);
+  return cachedLines;
+}
+
+function getServerCartSnapshot(): CartLine[] {
+  return EMPTY_CART;
+}
+
 function writeCart(lines: CartLine[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+  const next = lines.length ? lines : EMPTY_CART;
+  const raw = next === EMPTY_CART ? null : JSON.stringify(next);
+  cachedRaw = raw;
+  cachedLines = next;
+  if (raw === null) {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } else {
+    window.localStorage.setItem(STORAGE_KEY, raw);
+  }
   window.dispatchEvent(new Event("tmc-cart"));
 }
 
-function subscribe(onStoreChange: () => void) {
+function subscribeCart(onStoreChange: () => void) {
   window.addEventListener("storage", onStoreChange);
   window.addEventListener("tmc-cart", onStoreChange);
   return () => {
@@ -85,17 +111,29 @@ function subscribe(onStoreChange: () => void) {
   };
 }
 
+function subscribeReady() {
+  return () => {};
+}
+
+function getClientReady() {
+  return true;
+}
+
+function getServerReady() {
+  return false;
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const lines = useSyncExternalStore(subscribe, readCart, () => []);
-  const ready = useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
+  const lines = useSyncExternalStore(
+    subscribeCart,
+    getCartSnapshot,
+    getServerCartSnapshot,
   );
+  const ready = useSyncExternalStore(subscribeReady, getClientReady, getServerReady);
   const [isOpen, setIsOpen] = useState(false);
 
   const setLines = useCallback((updater: CartLine[] | ((current: CartLine[]) => CartLine[])) => {
-    const current = readCart();
+    const current = getCartSnapshot();
     const next = typeof updater === "function" ? updater(current) : updater;
     writeCart(next);
   }, []);
@@ -156,7 +194,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [setLines],
   );
 
-  const clearCart = useCallback(() => setLines([]), [setLines]);
+  const clearCart = useCallback(() => setLines(EMPTY_CART), [setLines]);
+
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
+  const toggleCart = useCallback(() => setIsOpen((open) => !open), []);
 
   const value = useMemo<CartContextValue>(() => {
     const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -170,15 +212,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotalCents,
       isOpen,
-      openCart: () => setIsOpen(true),
-      closeCart: () => setIsOpen(false),
-      toggleCart: () => setIsOpen((open) => !open),
+      openCart,
+      closeCart,
+      toggleCart,
       addItem,
       updateQuantity,
       removeItem,
       clearCart,
     };
-  }, [addItem, clearCart, isOpen, lines, ready, removeItem, updateQuantity]);
+  }, [
+    addItem,
+    clearCart,
+    closeCart,
+    isOpen,
+    lines,
+    openCart,
+    ready,
+    removeItem,
+    toggleCart,
+    updateQuantity,
+  ]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

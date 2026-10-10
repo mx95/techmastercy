@@ -11,7 +11,12 @@ export function Container({
   as?: "div" | "section" | "header" | "footer" | "main";
 }) {
   return (
-    <Tag className={clsx("mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8", className)}>
+    <Tag
+      className={clsx(
+        "mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8",
+        className,
+      )}
+    >
       {children}
     </Tag>
   );

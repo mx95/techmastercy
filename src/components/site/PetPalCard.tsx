@@ -8,7 +8,7 @@ export function PetPalCard({ compact = false }: { compact?: boolean }) {
       aria-label={petpal.headline}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground-muted">
-        Related project
+        {petpal.eyebrow}
       </p>
       <h2
         className={`mt-2 font-display font-semibold text-white ${

@@ -42,7 +42,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
           type="search"
           defaultValue={searchParams.get("q") || ""}
           placeholder="Search products"
-          className="w-full rounded-md border border-white/15 bg-background px-3 py-2 text-sm"
+          className="min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
         />
       </div>
       <div>
@@ -53,7 +53,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
           id="shop-category"
           value={searchParams.get("category") || ""}
           onChange={(e) => update("category", e.target.value)}
-          className="w-full rounded-md border border-white/15 bg-background px-3 py-2 text-sm"
+          className="min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
         >
           <option value="">All categories</option>
           {categories.map((c) => (
@@ -71,7 +71,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
           id="shop-sort"
           value={searchParams.get("sort") || "relevance"}
           onChange={(e) => update("sort", e.target.value)}
-          className="w-full rounded-md border border-white/15 bg-background px-3 py-2 text-sm"
+          className="min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
         >
           <option value="relevance">Relevance</option>
           <option value="price-asc">Price: low to high</option>
@@ -83,7 +83,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
         <button
           type="button"
           onClick={() => update("type", "")}
-          className={`rounded-md px-3 py-1.5 text-xs ${
+          className={`min-h-11 rounded-md px-3 py-2 text-sm ${
             !searchParams.get("type") ? "bg-accent text-background" : "bg-white/5"
           }`}
         >
@@ -92,7 +92,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
         <button
           type="button"
           onClick={() => update("type", "PHYSICAL")}
-          className={`rounded-md px-3 py-1.5 text-xs ${
+          className={`min-h-11 rounded-md px-3 py-2 text-sm ${
             searchParams.get("type") === "PHYSICAL"
               ? "bg-accent text-background"
               : "bg-white/5"
@@ -103,7 +103,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
         <button
           type="button"
           onClick={() => update("type", "DIGITAL")}
-          className={`rounded-md px-3 py-1.5 text-xs ${
+          className={`min-h-11 rounded-md px-3 py-2 text-sm ${
             searchParams.get("type") === "DIGITAL"
               ? "bg-accent text-background"
               : "bg-white/5"
@@ -113,7 +113,7 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
         </button>
         <button
           type="submit"
-          className="ml-auto rounded-md bg-white/10 px-3 py-1.5 text-xs hover:bg-white/15"
+          className="min-h-11 rounded-md bg-white/10 px-4 py-2 text-sm hover:bg-white/15 sm:ml-auto"
         >
           Search
         </button>

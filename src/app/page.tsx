@@ -1,261 +1,248 @@
-import Image from "next/image";
 import Link from "next/link";
-import { FaqAccordion } from "@/components/site/FaqAccordion";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
+import { PaymentProvidersSection } from "@/components/site/PaymentProvidersSection";
 import { PetPalCard } from "@/components/site/PetPalCard";
 import { SectionHeading } from "@/components/site/SectionHeading";
-import { ProductCard } from "@/components/shop/ProductCard";
-import { ServiceSelector } from "@/components/services/ServiceSelector";
-import { siteFaqs } from "@/content/faqs";
-import { getServicesByCategory, services } from "@/content/services";
 import { siteConfig } from "@/lib/config";
-import { listPublishedProducts } from "@/lib/products";
 import { createMetadata } from "@/lib/seo";
 
+const heroHighlights = [
+  {
+    title: "Online payments & integrations",
+    body: "Gateway checkout, callbacks and order status that stay aligned.",
+  },
+  {
+    title: "APIs, webhooks & reliability",
+    body: "Server-side verification, idempotency and clearer failure handling.",
+  },
+  {
+    title: "AI & business automation",
+    body: "Practical workflows with logging, access control and human review.",
+  },
+];
+
 export const metadata = createMetadata({
-  title: "Payment integration & reliable business systems in Cyprus",
-  description: siteConfig.description,
+  title: "Payment integration services Cyprus | Automation & AI",
+  description:
+    "Reliable payment gateway integration, API and business process automation, and practical AI implementation for businesses in Cyprus. Clear scope, testing and handover.",
   path: "/",
 });
+
+const problemServices = [
+  {
+    problem: "Online payments that fail or stay pending",
+    outcome: "Checkout, callbacks and order status stay aligned after each payment attempt.",
+    href: "/services/payment-gateway-integration",
+    label: "Payment gateway integration",
+  },
+  {
+    problem: "JCC or local payment workflows that need hardening",
+    outcome: "Server-side sessions, verified notifications and idempotent paid/failed handling.",
+    href: "/services/jcc-payment-integration",
+    label: "JCC payment integration",
+  },
+  {
+    problem: "Repetitive admin between systems",
+    outcome: "Connect storefronts, CRMs and spreadsheets so staff stop copy-pasting orders and reports.",
+    href: "/services/business-process-automation",
+    label: "Business process automation",
+  },
+  {
+    problem: "AI experiments that never reach production",
+    outcome: "Assess one workflow, then implement with logging, access control and human review where it matters.",
+    href: "/services/ai-consulting-implementation",
+    label: "AI consulting & implementation",
+  },
+  {
+    problem: "Website, API or webhook issues with no in-house specialist",
+    outcome: "Scoped remote investigation during business hours—clear findings, no unlimited 24/7 claims.",
+    href: "/services/technical-support",
+    label: "Technical support",
+  },
+  {
+    problem: "WooCommerce or Shopify payment setup",
+    outcome: "Configure and verify store checkout so successful payments update orders correctly.",
+    href: "/services/woocommerce-payment-integration",
+    label: "Store payment integrations",
+  },
+];
 
 const processSteps = [
   {
     title: "Discovery",
-    body: "Share your platform, payment provider and the outcome you need. We clarify constraints before writing code.",
+    body: "You describe the platform, payment provider or workflow and the outcome you need.",
   },
   {
     title: "Scoped proposal",
-    body: "You receive a practical plan with deliverables and an indicative or fixed estimate—no vague retainers by default.",
+    body: "You get deliverables, exclusions and an indicative or fixed estimate before coding starts.",
   },
   {
     title: "Implement & verify",
-    body: "Checkout, callbacks and order updates are built and tested for success, decline, duplicate and delayed events.",
+    body: "Work is built and tested for success, decline, duplicate and delayed cases where relevant.",
   },
   {
     title: "Handover",
-    body: "You get operational notes so your team can support the flow after go-live.",
+    body: "You receive operational notes so your team can support the flow after go-live.",
   },
 ];
 
-const capabilities = [
-  "Online payment gateway integration",
-  "JCC payment workflows (with your merchant access)",
-  "WooCommerce and Shopify payment setups",
-  "Custom website and application payments",
-  "REST APIs, webhooks and third-party integrations",
-  "Java, Spring Boot, .NET, SQL and backend work",
-  "Payment failure and order sync troubleshooting",
-  "Practical AI implementation and business automation",
-];
-
-const aiPaths = [
+const useCases = [
   {
-    title: "Discover where AI can help",
-    body: "Assess one real workflow and get written recommendations before you commit to implementation.",
-    href: "/services/ai-consulting-implementation",
+    title: "Payment checkout that updates orders",
+    items: [
+      "Server-validated totals and licence options",
+      "Provider notification verification",
+      "Clear paid / failed / cancelled states",
+    ],
   },
   {
-    title: "Automate a repetitive business process",
-    body: "Connect systems, reduce copy-paste work and keep human review where exceptions matter.",
-    href: "/services/business-process-automation",
+    title: "Automation that removes copy-paste",
+    items: [
+      "Order or enquiry routing between systems",
+      "Invoice and appointment notifications",
+      "Imports, exports and recurring reports",
+    ],
   },
   {
-    title: "Integrate AI into an existing system",
-    body: "Wire approved models or tools into websites and applications with logging and access controls.",
-    href: "/services/ai-automation",
+    title: "Practical AI in one defined workflow",
+    items: [
+      "Document extraction from approved sources",
+      "Support drafts with human approval",
+      "Internal assistants limited to approved documents",
+    ],
   },
 ];
 
-export default async function HomePage() {
-  const products = await listPublishedProducts({ sort: "relevance" });
-  const featured = products.slice(0, 4);
-  const paymentHighlights = services.filter((s) => s.category === "payments").slice(0, 4);
-  const aiHighlights = getServicesByCategory("ai-automation").slice(0, 4);
+const trustFacts = [
+  "Prices and licence options in the shop are validated on the server—never trusted from the browser.",
+  "Payment success is confirmed through provider verification and idempotent notifications, not a thank-you page redirect.",
+  "JCC work uses your merchant documentation and credentials. No official partnership or certification is claimed.",
+  "AI integrations are opt-in per project. Customer data is not sent to third-party AI services without appropriate authorization.",
+  "Support packages have a limited allowance and business-hour expectations—not unlimited or 24/7 coverage.",
+];
 
+export default function HomePage() {
   return (
     <>
+      {/* 1. Value proposition */}
       <section className="hero-atmosphere relative overflow-hidden border-b border-white/10">
-        <Container className="relative grid min-h-[78vh] items-center gap-10 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
+        <Container className="relative grid items-center gap-10 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
           <div>
-            <p className="animate-fade-up font-display text-sm font-semibold uppercase tracking-[0.22em] text-accent-soft">
-              TechmasterCY
+            <p className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-accent-soft">
+              TechmasterCY · Cyprus
             </p>
-            <div className="animate-accent-line mt-4 h-px w-24 origin-left bg-accent" />
-            <h1 className="animate-fade-up delay-1 mt-6 max-w-xl text-balance font-display text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
-              Payment integration that keeps orders and money in sync.
+            <h1 className="mt-3 max-w-xl text-balance font-display text-[1.85rem] font-semibold leading-tight text-white sm:mt-4 sm:text-4xl lg:text-5xl">
+              Reliable payment integrations and business systems.
             </h1>
-            <p className="animate-fade-up delay-2 mt-5 max-w-lg text-lg text-foreground-muted">
-              Specialist help for Cyprus businesses that need reliable online payments,
-              webhook-safe backends and practical developer tooling—not another generic agency brochure.
+            <p className="mt-4 max-w-lg text-base text-foreground-muted sm:mt-5 sm:text-lg">
+              Practical help with online payments, APIs, automation and AI implementation for
+              businesses in Cyprus—scoped clearly, tested properly and handed over so your team
+              can run it.
             </p>
-            <div className="animate-fade-up delay-3 mt-8 flex flex-wrap gap-3">
-              <Button href="/contact?service=payment-gateway-integration" size="lg">
-                Request a Payment Integration
+            <ul className="mt-4 grid gap-2 text-sm text-foreground-muted sm:mt-5 sm:flex sm:flex-wrap sm:gap-x-4 sm:gap-y-2">
+              <li>Payment gateways &amp; troubleshooting</li>
+              <li>APIs &amp; webhooks</li>
+              <li>Automation &amp; AI</li>
+              <li>Scoped technical support</li>
+            </ul>
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+              <Button href="/contact" size="lg" className="w-full sm:w-auto">
+                Discuss Your Project
               </Button>
-              <Button href="/shop" variant="secondary" size="lg">
-                Explore the Shop
+              <Button href="/services" variant="secondary" size="lg" className="w-full sm:w-auto">
+                Explore Services
               </Button>
             </div>
+            <p className="mt-4 text-sm text-foreground-muted">
+              Prefer email?{" "}
+              <a
+                href={`mailto:${siteConfig.businessEmail}`}
+                className="font-medium text-accent-soft hover:underline"
+              >
+                {siteConfig.businessEmail}
+              </a>
+            </p>
           </div>
-          <div className="animate-fade-in delay-2 relative hidden min-h-[320px] lg:block">
-            <div className="absolute inset-0 rounded-lg border border-white/10 bg-background-elevated/70 p-8 backdrop-blur-sm">
-              <Image
-                src="/images/brand/logo-transparent.png"
-                alt="TechmasterCY"
-                width={420}
-                height={120}
-                className="h-auto w-full max-w-md"
-                priority
-              />
-              <ul className="mt-10 space-y-3 text-sm text-foreground-muted">
-                <li className="flex gap-2">
-                  <span className="text-accent">▸</span> Server-validated checkout totals
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-accent">▸</span> Idempotent payment notifications
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-accent">▸</span> WooCommerce, Shopify and custom apps
-                </li>
-                <li className="flex gap-2">
-                  <span className="text-accent">▸</span> Cyprus-focused EUR commerce
-                </li>
+          <div className="relative hidden lg:block">
+            <div className="rounded-lg border border-white/10 bg-background-elevated/80 p-7">
+              <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-accent-soft">
+                What we help with
+              </p>
+              <ul className="mt-5 space-y-5">
+                {heroHighlights.map((item, index) => (
+                  <li key={item.title} className="flex gap-3">
+                    <span
+                      className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-accent/35 bg-accent-dim font-display text-xs font-semibold text-accent-soft"
+                      aria-hidden
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="font-display text-base font-semibold text-white">
+                        {item.title}
+                      </p>
+                      <p className="mt-1 text-sm text-foreground-muted">{item.body}</p>
+                    </div>
+                  </li>
+                ))}
               </ul>
+              <p className="mt-6 border-t border-white/10 pt-4 text-xs text-foreground-muted">
+                Merchants, SaaS and ops teams in Cyprus · scoped proposal before build
+              </p>
             </div>
           </div>
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-16 lg:py-20">
+      {/* 2. Services by customer problem */}
+      <section className="border-b border-white/10 py-14 lg:py-16">
         <Container>
           <SectionHeading
             eyebrow="Services"
-            title="What we help you ship"
-            description="Focused engagements around payments, integrations, AI adoption and the systems that keep them honest."
+            title="What problem are you trying to solve?"
+            description="Pick the closest match. Each service page explains inclusions, process and indicative pricing."
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[...paymentHighlights, ...aiHighlights].slice(0, 8).map((service) => (
+          <div className="mt-8 grid gap-3 md:grid-cols-2">
+            {problemServices.map((item) => (
               <Link
-                key={service.slug}
-                href={`/services/${service.slug}`}
-                className="surface group rounded-lg p-5 transition hover:border-accent/40 hover:bg-accent-dim/40"
+                key={item.href + item.label}
+                href={item.href}
+                className="surface group rounded-lg p-5 transition hover:border-accent/40 hover:bg-accent-dim/30"
               >
-                <h3 className="font-display text-base font-semibold text-white group-hover:text-accent-soft">
-                  {service.shortTitle}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
-                  {service.summary}
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-soft">
+                  {item.label}
                 </p>
+                <h3 className="mt-2 font-display text-lg font-semibold text-white group-hover:text-accent-soft">
+                  {item.problem}
+                </h3>
+                <p className="mt-2 text-sm text-foreground-muted">{item.outcome}</p>
               </Link>
             ))}
           </div>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8">
             <Button href="/services" variant="secondary">
               View all services
             </Button>
-            <Button href="/services/ai-automation" variant="ghost">
-              AI & automation hub
-            </Button>
           </div>
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-16 lg:py-20">
+      {/* 3. How working together works */}
+      <section className="border-b border-white/10 py-14 lg:py-16">
         <Container>
           <SectionHeading
-            eyebrow="AI & automation"
-            title="Make AI useful for your business."
-            description="TechmasterCY helps businesses move from experimenting with AI tools to implementing reliable, measurable solutions in their real workflows—without promising perfect accuracy or replacing every human check."
+            eyebrow="Process"
+            title="How working with TechmasterCY works"
+            description="No vague retainers by default—scope first, then delivery."
           />
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {aiPaths.map((path, index) => (
-              <Link
-                key={path.href}
-                href={path.href}
-                className="surface group rounded-lg p-6 transition hover:border-accent/40"
-              >
-                <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-accent">
-                  Path 0{index + 1}
-                </p>
-                <h3 className="mt-3 font-display text-xl font-semibold text-white group-hover:text-accent-soft">
-                  {path.title}
-                </h3>
-                <p className="mt-2 text-sm text-foreground-muted">{path.body}</p>
-              </Link>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-b border-white/10 py-16 lg:py-20">
-        <Container className="max-w-4xl">
-          <ServiceSelector />
-        </Container>
-      </section>
-
-      <section className="border-b border-white/10 py-16 lg:py-20">
-        <Container className="grid gap-10 lg:grid-cols-2">
-          <SectionHeading
-            eyebrow="Capabilities"
-            title="Payment integration capabilities"
-            description="Work is scoped to real systems: gateways, storefronts, APIs and the failure paths that usually get skipped."
-          />
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {capabilities.map((item) => (
-              <li
-                key={item}
-                className="surface rounded-lg px-4 py-3 text-sm text-foreground-muted"
-              >
-                <span className="mr-2 text-accent">●</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </Container>
-      </section>
-
-      <section className="border-b border-white/10 py-16 lg:py-20">
-        <Container>
-          <SectionHeading
-            eyebrow="Shop"
-            title="Featured products"
-            description="Hardware from the TechmasterCY catalogue, with server-validated EUR pricing. Digital kits stay unpublished until files are ready."
-          />
-          {featured.length === 0 ? (
-            <p className="mt-8 text-foreground-muted">No published products yet.</p>
-          ) : (
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {featured.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-          <div className="mt-8">
-            <Button href="/shop" variant="secondary">
-              Open the shop
-            </Button>
-          </div>
-          <div className="mt-10">
-            <PetPalCard />
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-b border-white/10 py-16 lg:py-20">
-        <Container>
-          <SectionHeading
-            eyebrow="Engagement"
-            title="A clear process from enquiry to handover"
-            description="No fabricated case studies—just a repeatable way to reduce payment and integration risk."
-          />
-          <ol className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {processSteps.map((step, index) => (
               <li key={step.title} className="surface rounded-lg p-5">
-                <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-accent">
-                  0{index + 1}
+                <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-accent">
+                  Step {index + 1}
                 </p>
-                <h3 className="mt-3 font-display text-lg font-semibold">{step.title}</h3>
+                <h3 className="mt-2 font-display text-lg font-semibold">{step.title}</h3>
                 <p className="mt-2 text-sm text-foreground-muted">{step.body}</p>
               </li>
             ))}
@@ -263,57 +250,83 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-16 lg:py-20">
-        <Container className="grid gap-10 lg:grid-cols-2">
+      {/* 4. Use cases and deliverables */}
+      <section className="border-b border-white/10 py-14 lg:py-16">
+        <Container>
+          <SectionHeading
+            eyebrow="Deliverables"
+            title="Examples of suitable work"
+            description="Concrete outcomes—not vague “AI transformation” claims."
+          />
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {useCases.map((block) => (
+              <article key={block.title} className="surface rounded-lg p-5">
+                <h3 className="font-display text-lg font-semibold text-white">{block.title}</h3>
+                <ul className="mt-3 space-y-2 text-sm text-foreground-muted">
+                  {block.items.map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <span className="text-accent" aria-hidden>
+                        ✓
+                      </span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* 5. Payment providers */}
+      <PaymentProvidersSection />
+
+      {/* 6. Trust — real facts only */}
+      <section className="border-b border-white/10 py-14 lg:py-16">
+        <Container className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionHeading
             eyebrow="Trust"
-            title="Built around verifiable technical practice"
-            description="We do not invent client logos, certifications, review scores or years of experience. Trust comes from how the work is done."
+            title="How we keep delivery honest"
+            description="We do not invent client logos, testimonials, certifications or success metrics. Trust comes from how the work is done."
           />
-          <ul className="space-y-4 text-sm text-foreground-muted">
-            <li className="surface rounded-lg p-4">
-              Prices, stock and licence options are validated on the server—never trusted from the browser.
-            </li>
-            <li className="surface rounded-lg p-4">
-              Payment success is confirmed through provider verification and idempotent notifications, not a thank-you page redirect.
-            </li>
-            <li className="surface rounded-lg p-4">
-              JCC work uses your merchant documentation and credentials. No unofficial API behaviour is assumed.
-            </li>
-            <li className="surface rounded-lg p-4">
-              Digital downloads are issued only after a paid order is verified, with expiring access tokens.
-            </li>
+          <ul className="space-y-3 text-sm text-foreground-muted">
+            {trustFacts.map((fact) => (
+              <li key={fact} className="surface rounded-lg px-4 py-3">
+                {fact}
+              </li>
+            ))}
           </ul>
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-16 lg:py-20">
-        <Container>
-          <SectionHeading eyebrow="FAQ" title="Common questions" />
-          <div className="mt-8 max-w-3xl">
-            <FaqAccordion items={siteFaqs} />
+      {/* 7. Contact CTA */}
+      <section className="border-b border-white/10 py-14 lg:py-16">
+        <Container className="surface rounded-xl px-6 py-10 sm:px-10">
+          <div className="max-w-2xl">
+            <h2 className="font-display text-3xl font-semibold text-white">
+              Tell us what is broken—or what you want to ship.
+            </h2>
+            <p className="mt-3 text-foreground-muted">
+              Share your systems and the outcome you need. You receive a scoped reply—not an
+              automated sales sequence. Indicative package prices are proposals until confirmed in a
+              quote.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button href="/contact" size="lg">
+                Discuss Your Project
+              </Button>
+              <Button href="/shop" variant="secondary" size="lg">
+                View Digital Products
+              </Button>
+            </div>
           </div>
         </Container>
       </section>
 
-      <section className="py-16 lg:py-20">
-        <Container className="surface overflow-hidden rounded-xl px-6 py-10 sm:px-10">
-          <div className="max-w-2xl">
-            <h2 className="font-display text-3xl font-semibold text-white">
-              Ready to fix payment flow—or start a clean integration?
-            </h2>
-            <p className="mt-3 text-foreground-muted">
-              Tell us about your store or application. You will get a scoped reply, not an automated sales sequence.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button href="/contact" size="lg">
-                Request a quote
-              </Button>
-              <Button href={`mailto:${siteConfig.businessEmail}`} variant="secondary" size="lg">
-                Email {siteConfig.businessEmail}
-              </Button>
-            </div>
-          </div>
+      {/* 8. PetPal — own project */}
+      <section className="py-10 lg:py-12">
+        <Container>
+          <PetPalCard />
         </Container>
       </section>
     </>

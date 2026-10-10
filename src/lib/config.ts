@@ -13,19 +13,20 @@ export const siteConfig = {
   appUrl: process.env.APP_URL || "http://localhost:3000",
   locale: "en",
   currency: "EUR" as const,
-  businessEmail: process.env.BUSINESS_EMAIL || "hello@techmaster.com.cy",
+  businessEmail: process.env.BUSINESS_EMAIL || "support@techmaster.com.cy",
   description:
-    "Payment gateway integration, JCC workflows, practical AI and business automation, technical support, and developer tools for businesses in Cyprus.",
+    "Payment gateway integration Cyprus, JCC and storefront payment workflows, API integrations, business process automation, practical AI implementation and scoped technical support.",
   keywords: [
+    "Payment integration services Cyprus",
     "Payment gateway integration Cyprus",
     "JCC payment integration Cyprus",
-    "WooCommerce payment integration Cyprus",
+    "WooCommerce payment integration",
     "Shopify payment integration Cyprus",
-    "Custom online payment integration",
+    "API integration services Cyprus",
     "Online payment troubleshooting Cyprus",
-    "Webhook integration and testing tools",
-    "AI consulting Cyprus",
     "Business process automation Cyprus",
+    "AI automation for businesses Cyprus",
+    "AI consulting Cyprus",
   ],
 };
 

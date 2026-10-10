@@ -4,7 +4,7 @@ import type { ProductCardData } from "@/lib/products";
 import { formatEur } from "@/lib/money";
 
 export function ProductCard({ product }: { product: ProductCardData }) {
-  const image = product.images[0] || "/images/brand/logo-dark.png";
+  const image = product.images[0] || "/images/brand/logo-wordmark-on-light.png";
   const outOfStock = product.type === "PHYSICAL" && product.stock !== null && product.stock <= 0;
 
   return (

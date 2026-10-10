@@ -1,19 +1,32 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/site/Button";
 import { services } from "@/content/services";
 
 export function ContactForm({ defaultService }: { defaultService?: string }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
     setMessage(null);
+    setFieldError(null);
     const form = event.currentTarget;
     const fd = new FormData(form);
+    const engagement = String(fd.get("engagementType") || "");
+    const budget = String(fd.get("budgetRange") || "");
+    let description = String(fd.get("description") || "");
+    const extras: string[] = [];
+    if (engagement) extras.push(`Preferred engagement: ${engagement}`);
+    if (budget) extras.push(`Indicative budget: ${budget}`);
+    if (extras.length) {
+      description = `${description}\n\n—\n${extras.join("\n")}`;
+    }
+
     const payload = {
       name: String(fd.get("name") || ""),
       email: String(fd.get("email") || ""),
@@ -21,7 +34,7 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
       website: String(fd.get("website") || ""),
       service: String(fd.get("service") || ""),
       paymentProvider: String(fd.get("paymentProvider") || ""),
-      description: String(fd.get("description") || ""),
+      description,
       preferredContact: String(fd.get("preferredContact") || "email"),
       websiteConfirm: String(fd.get("websiteConfirm") || ""),
     };
@@ -40,30 +53,41 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
       };
       if (!res.ok) {
         setStatus("error");
-        setMessage(data.error || "Could not submit the form.");
+        setFieldError(data.error || "Could not submit the form. Please check the fields and try again.");
         return;
       }
       setStatus("success");
       form.reset();
       if (data.emailDelivered) {
-        setMessage("Enquiry saved and email delivered. We will reply soon.");
+        setMessage(
+          "Thanks — your enquiry was saved and emailed to us. We will reply with next steps or clarifying questions.",
+        );
       } else {
         setMessage(
-          `Enquiry saved successfully. ${data.emailNote || "Email delivery is not configured yet—your message is still stored."}`,
+          `Thanks — your enquiry was saved. ${data.emailNote || "Email delivery is not configured yet; your message is still stored and we will follow up."}`,
         );
       }
     } catch {
       setStatus("error");
-      setMessage("Network error. Please try again.");
+      setFieldError("Network error. Please try again, or email us directly.");
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="relative space-y-4 rounded-lg border border-white/10 bg-background-elevated/40 p-6">
+    <form
+      onSubmit={onSubmit}
+      className="relative space-y-4 rounded-lg border border-white/15 bg-background-elevated/60 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      noValidate={false}
+      aria-describedby="contact-privacy"
+    >
+      <p className="text-sm text-foreground-muted">
+        Required fields are enough for a useful first reply. Optional fields help us scope
+        faster—skip anything you are unsure about.
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className="text-sm font-medium">
-            Name
+            Name <span className="text-foreground-muted">(required)</span>
           </label>
           <input
             id="name"
@@ -71,44 +95,47 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
             required
             minLength={2}
             autoComplete="name"
-            className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
           />
         </div>
         <div>
           <label htmlFor="email" className="text-sm font-medium">
-            Business email
+            Business email <span className="text-foreground-muted">(required)</span>
           </label>
           <input
             id="email"
             name="email"
             type="email"
+            inputMode="email"
             required
             autoComplete="email"
-            className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
           />
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="company" className="text-sm font-medium">
-            Company (optional)
+            Company <span className="text-foreground-muted">(optional)</span>
           </label>
           <input
             id="company"
             name="company"
             autoComplete="organization"
-            className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
           />
         </div>
         <div>
           <label htmlFor="website" className="text-sm font-medium">
-            Website URL (optional)
+            Website URL <span className="text-foreground-muted">(optional)</span>
           </label>
           <input
             id="website"
             name="website"
+            type="url"
+            inputMode="url"
             autoComplete="url"
-            className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
             placeholder="https://"
           />
         </div>
@@ -116,14 +143,14 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="service" className="text-sm font-medium">
-            Service required
+            Service category
           </label>
           <select
             id="service"
             name="service"
             required
             defaultValue={defaultService || "payment-gateway-integration"}
-            className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
           >
             {services.map((s) => (
               <option key={s.slug} value={s.slug}>
@@ -135,29 +162,64 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
         </div>
         <div>
           <label htmlFor="paymentProvider" className="text-sm font-medium">
-            Payment provider (if relevant)
+            Payment provider <span className="text-foreground-muted">(if relevant)</span>
           </label>
           <input
             id="paymentProvider"
             name="paymentProvider"
             placeholder="JCC, Stripe, PayPal…"
-            className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
           />
         </div>
       </div>
       <div>
         <label htmlFor="description" className="text-sm font-medium">
-          Project description
+          Short description of the problem <span className="text-foreground-muted">(required)</span>
         </label>
         <textarea
           id="description"
           name="description"
           required
           minLength={20}
-          rows={6}
-          className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
-          placeholder="What are you trying to accept payments for, and what is broken or missing today?"
+          rows={5}
+          className="mt-1 min-h-32 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
+          placeholder="What systems do you use, what should happen, and what is broken or missing today?"
         />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="engagementType" className="text-sm font-medium">
+            Engagement type <span className="text-foreground-muted">(optional)</span>
+          </label>
+          <select
+            id="engagementType"
+            name="engagementType"
+            defaultValue=""
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
+          >
+            <option value="">Not sure yet</option>
+            <option value="one-time project">One-time project</option>
+            <option value="investigation / fix">Investigation / fix</option>
+            <option value="ongoing support">Ongoing support</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="budgetRange" className="text-sm font-medium">
+            Indicative budget <span className="text-foreground-muted">(optional)</span>
+          </label>
+          <select
+            id="budgetRange"
+            name="budgetRange"
+            defaultValue=""
+            className="mt-1 min-h-11 w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
+          >
+            <option value="">Prefer not to say</option>
+            <option value="under €200">Under €200</option>
+            <option value="€200–€500">€200–€500</option>
+            <option value="€500–€1,500">€500–€1,500</option>
+            <option value="€1,500+">€1,500+</option>
+          </select>
+        </div>
       </div>
       <fieldset>
         <legend className="text-sm font-medium">Preferred contact method</legend>
@@ -183,14 +245,30 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
         <label htmlFor="websiteConfirm">Leave blank</label>
         <input id="websiteConfirm" name="websiteConfirm" tabIndex={-1} autoComplete="off" />
       </div>
-      <Button type="submit" disabled={status === "loading"}>
-        {status === "loading" ? "Sending…" : "Send enquiry"}
+      <p id="contact-privacy" className="text-xs text-foreground-muted">
+        By submitting, you agree that we may use your details to respond to this enquiry. We do not
+        sell your data. See the{" "}
+        <Link href="/privacy" className="text-accent-soft underline-offset-2 hover:underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full sm:w-auto"
+        disabled={status === "loading"}
+        aria-busy={status === "loading"}
+      >
+        {status === "loading" ? "Sending…" : "Discuss Your Project"}
       </Button>
+      {fieldError ? (
+        <p role="alert" className="text-sm text-danger">
+          {fieldError}
+        </p>
+      ) : null}
       {message ? (
-        <p
-          role="status"
-          className={`text-sm ${status === "error" ? "text-danger" : "text-success"}`}
-        >
+        <p role="status" aria-live="polite" className="text-sm text-success">
           {message}
         </p>
       ) : null}

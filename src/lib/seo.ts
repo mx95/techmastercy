@@ -33,7 +33,7 @@ export function createMetadata(options: {
       type: "website",
       images: options.ogImage
         ? [{ url: absoluteUrl(options.ogImage) }]
-        : [{ url: absoluteUrl("/images/brand/logo-dark.png") }],
+        : [{ url: absoluteUrl("/images/brand/emblem-black-on-white.png") }],
     },
     twitter: {
       card: "summary_large_image",

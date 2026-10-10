@@ -36,7 +36,11 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [{ url: "/images/brand/logo-dark.png" }],
+    images: [{ url: "/images/brand/emblem-black-on-white.png" }],
+  },
+  icons: {
+    icon: [{ url: "/images/brand/emblem-black-on-white.png", type: "image/png" }],
+    apple: [{ url: "/images/brand/emblem-black-on-white.png", type: "image/png" }],
   },
 };
 
