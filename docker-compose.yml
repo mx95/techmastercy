@@ -1,0 +1,55 @@
+# Production Compose for TechmasterCY on Hetzner.
+# App binds to loopback only; nginx (host) terminates HTTP/HTTPS.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: techmastercy-app:${IMAGE_TAG:-latest}
+    container_name: techmastercy-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/data/techmastercy.db
+      PRIVATE_FILES_DIR: /data/private
+      APP_URL: ${APP_URL:-https://techmaster.com.cy}
+      SITE_URL: ${SITE_URL:-https://techmaster.com.cy}
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - techmaster_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    # Non-Swarm Compose respects mem_limit (deploy.resources is ignored outside Swarm).
+    mem_limit: 1536m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - techmaster_internal
+
+volumes:
+  techmaster_data:
+    name: techmaster_data
+
+networks:
+  techmaster_internal:
+    name: techmaster_internal
+    driver: bridge

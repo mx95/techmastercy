@@ -1,0 +1,95 @@
+# Production deploy after merges into main (and optional manual dispatch).
+# Never deploys from feature branches. Never logs in as root.
+name: Deploy production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      git_sha:
+        description: "Optional git SHA to deploy (defaults to the workflow SHA)"
+        required: false
+        type: string
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  quality:
+    name: Pre-deploy quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+        env:
+          DATABASE_URL: file:./ci-build.db
+          SESSION_SECRET: ci-session-secret-at-least-32-characters-long
+          NODE_ENV: production
+
+  deploy:
+    name: Deploy to Hetzner
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    steps:
+      - name: Resolve deploy SHA
+        id: meta
+        run: |
+          SHA="${{ inputs.git_sha }}"
+          if [ -z "$SHA" ]; then
+            SHA="${{ github.sha }}"
+          fi
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+          echo "Deploy target SHA: ${SHA}"
+
+      - name: Deploy over SSH (tmcdeploy + restricted ctl)
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          fingerprint: ${{ secrets.DEPLOY_SSH_FINGERPRINT }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            echo "Running restricted deploy for ${{ steps.meta.outputs.sha }}"
+            sudo /usr/local/sbin/techmastercy-ctl deploy "${{ steps.meta.outputs.sha }}"
+            sudo /usr/local/sbin/techmastercy-ctl health
+            sudo /usr/local/sbin/techmastercy-ctl status
+
+      - name: Confirm success marker
+        run: |
+          echo "Deployment verified via remote health check for ${{ steps.meta.outputs.sha }}"
