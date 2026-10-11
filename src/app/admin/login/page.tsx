@@ -1,10 +1,8 @@
 "use client";
 
 import { FormEvent, useState, type CSSProperties } from "react";
-import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +23,8 @@ export default function AdminLoginPage() {
         setError(data.error || "Login failed.");
         return;
       }
-      // Full navigation so the session cookie is included on the next request.
+      // Full document navigation so the Set-Cookie from login is sent on /admin.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- soft client nav can race the session cookie
       window.location.assign("/admin");
       return;
     } catch {
