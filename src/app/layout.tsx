@@ -6,7 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
 import { JsonLd } from "@/components/site/JsonLd";
 import { siteConfig } from "@/lib/config";
-import { organizationJsonLd } from "@/lib/seo";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -39,8 +39,12 @@ export const metadata: Metadata = {
     images: [{ url: "/images/brand/emblem-black-on-white.png" }],
   },
   icons: {
-    icon: [{ url: "/images/brand/emblem-black-on-white.png", type: "image/png" }],
-    apple: [{ url: "/images/brand/emblem-black-on-white.png", type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48", type: "image/x-icon" },
+      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon.ico",
   },
 };
 
@@ -53,8 +57,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="atmosphere flex min-h-full flex-col font-sans">
         <CartProvider>
           <JsonLd data={organizationJsonLd()} />
+          <JsonLd data={websiteJsonLd()} />
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
           <Header />
-          <main className="min-w-0 flex-1">{children}</main>
+          <main id="main-content" className="min-w-0 flex-1 scroll-mt-20">
+            {children}
+          </main>
           <Footer />
           <CartDrawer />
         </CartProvider>

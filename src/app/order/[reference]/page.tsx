@@ -34,7 +34,7 @@ export default async function OrderPage({ params }: { params: Params }) {
   const paid = order.paymentStatus === "CAPTURED" || order.status === "PAID";
 
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <p className="text-xs uppercase tracking-[0.18em] text-accent">Order status</p>
       <h1 className="mt-2 font-display text-3xl font-semibold">{order.reference}</h1>
       <p className="mt-2 text-foreground-muted">

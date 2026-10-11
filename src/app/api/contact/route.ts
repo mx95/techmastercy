@@ -34,8 +34,24 @@ export async function POST(request: Request) {
 
   const parsed = contactSchema.safeParse(body);
   if (!parsed.success) {
+    const flat = parsed.error.flatten();
+    const firstField = Object.entries(flat.fieldErrors).find(
+      ([, messages]) => Array.isArray(messages) && messages.length > 0,
+    );
+    const firstMessage =
+      (firstField?.[1] as string[] | undefined)?.[0] ||
+      flat.formErrors[0] ||
+      "Validation failed.";
+    const fieldLabel = firstField?.[0]
+      ? firstField[0]
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (c) => c.toUpperCase())
+      : null;
     return NextResponse.json(
-      { error: "Validation failed.", details: parsed.error.flatten() },
+      {
+        error: fieldLabel ? `${fieldLabel}: ${firstMessage}` : firstMessage,
+        details: flat,
+      },
       { status: 400 },
     );
   }

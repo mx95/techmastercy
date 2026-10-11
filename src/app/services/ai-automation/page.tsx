@@ -23,7 +23,7 @@ export default function AiAutomationLandingPage() {
   const related = getServicesByCategory("ai-automation");
 
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs
         items={[
           { name: "Home", path: "/" },

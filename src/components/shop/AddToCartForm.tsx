@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { Button } from "@/components/site/Button";
+import type { ProductBundleConfig } from "@/content/product-bundles";
 import { formatEur } from "@/lib/money";
 
 type Licence = {
@@ -16,6 +17,7 @@ export function AddToCartForm({
   product,
   licences,
   stock,
+  volumeBundles = null,
 }: {
   product: {
     id: string;
@@ -27,6 +29,7 @@ export function AddToCartForm({
   };
   licences: Licence[];
   stock: number | null;
+  volumeBundles?: ProductBundleConfig | null;
 }) {
   const { addItem } = useCart();
   const [licenceId, setLicenceId] = useState(licences[0]?.id || "");
@@ -40,6 +43,24 @@ export function AddToCartForm({
 
   const unitPrice = selectedLicence?.priceCents ?? product.priceCents;
   const soldOut = product.type === "PHYSICAL" && stock !== null && stock <= 0;
+  const maxQty =
+    product.type === "PHYSICAL" && stock !== null && stock > 0
+      ? Math.min(99, stock)
+      : 99;
+
+  const availablePacks = useMemo(() => {
+    if (!volumeBundles?.packs?.length) return [];
+    return volumeBundles.packs.filter((pack) => pack.quantity <= maxQty);
+  }, [maxQty, volumeBundles]);
+
+  const activePackQty = availablePacks.some((pack) => pack.quantity === quantity)
+    ? quantity
+    : null;
+
+  function setQty(next: number) {
+    const clamped = Math.max(1, Math.min(maxQty, Number.isFinite(next) ? next : 1));
+    setQuantity(clamped);
+  }
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -63,7 +84,9 @@ export function AddToCartForm({
       quantity,
       type: product.type,
     });
-    setMessage("Added to cart.");
+    setMessage(
+      quantity > 1 ? `Added ${quantity} to cart.` : "Added to cart.",
+    );
   }
 
   return (
@@ -102,34 +125,126 @@ export function AddToCartForm({
         </fieldset>
       ) : null}
 
-      {product.type === "PHYSICAL" ? (
+      {product.type === "PHYSICAL" && !soldOut && availablePacks.length > 0 ? (
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium tracking-wide text-foreground">
+            {volumeBundles?.heading ?? "Buy in bulk"}
+          </legend>
+          <div className="grid gap-2">
+            {availablePacks.map((pack) => {
+              const selected = activePackQty === pack.quantity;
+              const packTotal = unitPrice * pack.quantity;
+              return (
+                <label
+                  key={pack.quantity}
+                  className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-3 transition ${
+                    selected
+                      ? "border-accent bg-accent-dim"
+                      : "border-white/10 hover:border-white/25"
+                  }`}
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <input
+                      type="radio"
+                      name="volume-pack"
+                      value={pack.quantity}
+                      checked={selected}
+                      onChange={() => setQty(pack.quantity)}
+                      className="mt-0.5"
+                    />
+                    <span className="min-w-0">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-white">{pack.label}</span>
+                        {pack.badge ? (
+                          <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent-soft">
+                            {pack.badge}
+                          </span>
+                        ) : null}
+                      </span>
+                      {pack.quantity > 1 ? (
+                        <span className="mt-0.5 block text-xs text-foreground-muted">
+                          {pack.quantity} × {formatEur(unitPrice)}
+                        </span>
+                      ) : null}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm font-semibold text-accent-soft">
+                    {formatEur(packTotal)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {product.type === "PHYSICAL" && !soldOut ? (
         <div>
           <label htmlFor="qty" className="text-sm font-medium">
             Quantity
           </label>
-          <input
-            id="qty"
-            type="number"
-            min={1}
-            max={stock && stock > 0 ? Math.min(99, stock) : 99}
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="mt-1 w-24 rounded-md border border-white/15 bg-background px-3 py-2"
-          />
+          <div className="mt-2 inline-flex items-stretch overflow-hidden rounded-md border border-white/15 bg-background">
+            <button
+              type="button"
+              onClick={() => setQty(quantity - 1)}
+              disabled={quantity <= 1}
+              className="flex h-11 w-11 items-center justify-center text-lg text-foreground transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Decrease quantity"
+            >
+              −
+            </button>
+            <input
+              id="qty"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={maxQty}
+              value={quantity}
+              onChange={(e) => setQty(Number(e.target.value))}
+              className="h-11 w-16 border-x border-white/15 bg-transparent text-center text-base tabular-nums outline-none sm:text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+            <button
+              type="button"
+              onClick={() => setQty(quantity + 1)}
+              disabled={quantity >= maxQty}
+              className="flex h-11 w-11 items-center justify-center text-lg text-foreground transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Increase quantity"
+            >
+              +
+            </button>
+          </div>
           {stock !== null ? (
+            <p className="mt-2 text-xs text-foreground-muted">{stock} in stock</p>
+          ) : null}
+          {quantity > 1 ? (
             <p className="mt-1 text-xs text-foreground-muted">
-              {stock > 0 ? `${stock} in stock` : "Sold out"}
+              Line total {formatEur(unitPrice * quantity)}
             </p>
           ) : null}
         </div>
       ) : null}
 
-      <p className="text-2xl font-semibold text-accent-soft">{formatEur(unitPrice)}</p>
+      {soldOut ? (
+        <p
+          className="inline-flex rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm font-medium text-danger"
+          role="status"
+        >
+          Sold out
+        </p>
+      ) : null}
+
+      {licences.length > 0 ? (
+        <p className="text-xl font-semibold text-accent-soft">{formatEur(unitPrice)}</p>
+      ) : null}
 
       <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={soldOut}>
         {soldOut ? "Sold out" : "Add to cart"}
       </Button>
-      {message ? <p className="text-sm text-foreground-muted" role="status">{message}</p> : null}
+      {message ? (
+        <p className="text-sm text-foreground-muted" role="status">
+          {message}
+        </p>
+      ) : null}
     </form>
   );
 }

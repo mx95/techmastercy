@@ -14,7 +14,7 @@ export const metadata = createMetadata({
 
 export default function AboutPage() {
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs
         items={[
           { name: "Home", path: "/" },
@@ -49,9 +49,11 @@ export default function AboutPage() {
           Pet-care hardware lives on the separate PetPal Care Hub project at petpal.com.cy.
         </p>
       </div>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <Button href="/contact">Discuss Your Project</Button>
-        <Button href="/services" variant="secondary">
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Button href="/contact" className="w-full sm:w-auto">
+          Discuss Your Project
+        </Button>
+        <Button href="/services" variant="secondary" className="w-full sm:w-auto">
           Explore Services
         </Button>
       </div>

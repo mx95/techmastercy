@@ -11,7 +11,7 @@ export default function CartPage() {
   const { lines, ready, subtotalCents, updateQuantity, removeItem } = useCart();
 
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <h1 className="font-display text-3xl font-semibold">Cart</h1>
       <p className="mt-2 text-sm text-foreground-muted">
         Cart contents are stored in your browser and re-priced on the server at checkout.

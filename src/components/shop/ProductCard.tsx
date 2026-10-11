@@ -14,8 +14,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           src={image}
           alt={product.name}
           fill
-          className="object-cover transition duration-500 group-hover:scale-[1.03]"
+          className="object-contain bg-[#f4f7fb] p-2 transition duration-500 group-hover:scale-[1.02]"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          quality={85}
         />
         {product.compareAtCents && product.compareAtCents > product.priceCents ? (
           <span className="absolute left-3 top-3 rounded bg-accent px-2 py-0.5 text-xs font-semibold text-background">

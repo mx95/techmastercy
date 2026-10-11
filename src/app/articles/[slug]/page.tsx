@@ -34,7 +34,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
   if (!article) notFound();
 
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs
         items={[
           { name: "Home", path: "/" },

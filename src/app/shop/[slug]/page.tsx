@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import { AddToCartForm } from "@/components/shop/AddToCartForm";
+import { ProductCard } from "@/components/shop/ProductCard";
 import { ProductGallery } from "@/components/shop/ProductGallery";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { Container } from "@/components/site/Container";
 import { JsonLd } from "@/components/site/JsonLd";
-import { getPublishedProduct } from "@/lib/products";
+import { getProductVolumeBundles } from "@/content/product-bundles";
+import { getPublishedProduct, getRelatedProducts } from "@/lib/products";
 import { formatEur } from "@/lib/money";
 import {
   breadcrumbJsonLd,
@@ -38,13 +40,16 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
   const product = await getPublishedProduct(slug);
   if (!product) notFound();
 
+  const related = await getRelatedProducts(product.slug, 4);
+  const volumeBundles = getProductVolumeBundles(product.slug);
+
   const availability =
     product.type === "PHYSICAL" && product.stock !== null && product.stock <= 0
       ? "OutOfStock"
       : "InStock";
 
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs
         items={[
           { name: "Home", path: "/" },
@@ -64,7 +69,7 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
             {product.name}
           </h1>
           <p className="mt-4 text-foreground-muted">{product.shortDescription}</p>
-          <div className="mt-4 flex items-baseline gap-3">
+          <div className="mt-4 flex flex-wrap items-baseline gap-3">
             <span className="text-3xl font-semibold text-accent-soft">
               {formatEur(product.priceCents)}
             </span>
@@ -90,6 +95,7 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
               }}
               licences={product.licences}
               stock={product.stock}
+              volumeBundles={volumeBundles}
             />
           </div>
 
@@ -110,6 +116,22 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
         <h2 className="font-display text-xl font-semibold text-white">Details</h2>
         <p className="mt-4">{product.description}</p>
       </section>
+
+      {related.length ? (
+        <section className="mt-14">
+          <h2 className="font-display text-xl font-semibold text-white">
+            You may also like
+          </h2>
+          <p className="mt-2 text-sm text-foreground-muted">
+            Other published items from the TechmasterCY catalogue.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {related.map((item) => (
+              <ProductCard key={item.id} product={item} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mt-10 grid gap-4 md:grid-cols-3">
         <div className="surface rounded-lg p-4 text-sm text-foreground-muted">

@@ -22,9 +22,16 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
     [router, searchParams],
   );
 
+  const hasFilters = Boolean(
+    searchParams.get("q") ||
+      searchParams.get("category") ||
+      searchParams.get("type") ||
+      (searchParams.get("sort") && searchParams.get("sort") !== "relevance"),
+  );
+
   return (
     <form
-      className="surface grid gap-3 rounded-lg p-4 md:grid-cols-4"
+      className="surface grid min-w-0 gap-3 rounded-lg p-4 md:grid-cols-4"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
@@ -117,6 +124,19 @@ export function ProductFilters({ categories }: { categories: CategoryOption[] })
         >
           Search
         </button>
+        {hasFilters ? (
+          <button
+            type="button"
+            onClick={() => {
+              startTransition(() => {
+                router.push("/shop");
+              });
+            }}
+            className="min-h-11 rounded-md border border-white/15 px-4 py-2 text-sm text-foreground-muted hover:text-foreground"
+          >
+            Clear filters
+          </button>
+        ) : null}
       </div>
     </form>
   );

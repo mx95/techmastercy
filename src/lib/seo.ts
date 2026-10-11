@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { socialLinks } from "@/content/social";
 import { siteConfig } from "@/lib/config";
 
 export function absoluteUrl(path = "/"): string {
@@ -44,17 +45,53 @@ export function createMetadata(options: {
 }
 
 export function organizationJsonLd() {
+  const sameAs = socialLinks.map((link) => link.href);
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: siteConfig.name,
+    legalName: siteConfig.legalName,
     url: siteConfig.url,
     email: siteConfig.businessEmail,
+    logo: absoluteUrl("/images/brand/emblem-black-on-white.png"),
+    image: absoluteUrl("/images/brand/emblem-black-on-white.png"),
     areaServed: {
       "@type": "Country",
       name: "Cyprus",
     },
     knowsAbout: siteConfig.keywords,
+    ...(sameAs.length ? { sameAs } : {}),
+  };
+}
+
+export function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    inLanguage: "en",
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+  };
+}
+
+export function faqJsonLd(items: Array<{ q: string; a: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
   };
 }
 

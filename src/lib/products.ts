@@ -101,6 +101,50 @@ export async function getPublishedProduct(slug: string) {
   };
 }
 
+/** Other published products for “You may also like”, preferring same category. */
+export async function getRelatedProducts(slug: string, limit = 4) {
+  const current = await prisma.product.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    select: { id: true, categoryId: true },
+  });
+  if (!current) return [];
+
+  const sameCategory = current.categoryId
+    ? await prisma.product.findMany({
+        where: {
+          status: "PUBLISHED",
+          id: { not: current.id },
+          categoryId: current.categoryId,
+        },
+        include: {
+          category: true,
+          licences: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+        },
+        orderBy: { sortOrder: "asc" },
+        take: limit,
+      })
+    : [];
+
+  if (sameCategory.length >= limit) {
+    return sameCategory.map(mapProductCard);
+  }
+
+  const extras = await prisma.product.findMany({
+    where: {
+      status: "PUBLISHED",
+      id: { notIn: [current.id, ...sameCategory.map((p) => p.id)] },
+    },
+    include: {
+      category: true,
+      licences: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+    },
+    orderBy: { sortOrder: "asc" },
+    take: limit - sameCategory.length,
+  });
+
+  return [...sameCategory, ...extras].map(mapProductCard);
+}
+
 export async function listCategories() {
   return prisma.category.findMany({
     orderBy: { sortOrder: "asc" },

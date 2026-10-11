@@ -13,7 +13,7 @@ export const metadata = createMetadata({
 
 export default function CheckoutPage() {
   return (
-    <Container className="py-12 lg:py-16">
+    <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },

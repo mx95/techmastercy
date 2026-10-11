@@ -60,10 +60,21 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
         error?: string;
         emailDelivered?: boolean;
         emailNote?: string;
+        details?: {
+          fieldErrors?: Record<string, string[] | undefined>;
+          formErrors?: string[];
+        };
       };
       if (!res.ok) {
         setStatus("error");
-        setFieldError(data.error || "Could not submit the form. Please check the fields and try again.");
+        const detailMessage =
+          data.error ||
+          Object.values(data.details?.fieldErrors || {})
+            .flat()
+            .find(Boolean) ||
+          data.details?.formErrors?.[0] ||
+          "Could not submit the form. Please check the fields and try again.";
+        setFieldError(detailMessage);
         return;
       }
       setStatus("success");

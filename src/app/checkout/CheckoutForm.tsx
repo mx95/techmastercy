@@ -114,12 +114,15 @@ export function CheckoutForm() {
 
   const needsShipping = lines.some((l) => l.type === "PHYSICAL");
 
+  const fieldClass =
+    "mt-1 min-h-11 w-full max-w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm";
+
   return (
-    <form onSubmit={onSubmit} className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-      <div className="space-y-4 rounded-lg border border-white/10 bg-background-elevated/40 p-6">
+    <form onSubmit={onSubmit} className="grid min-w-0 gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
+      <div className="min-w-0 space-y-4 rounded-lg border border-white/10 bg-background-elevated/40 p-4 sm:p-6">
         <h2 className="font-display text-lg font-semibold">Customer details</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+          <div className="min-w-0">
             <label htmlFor="name" className="text-sm font-medium">
               Full name
             </label>
@@ -129,10 +132,10 @@ export function CheckoutForm() {
               required
               minLength={2}
               autoComplete="name"
-              className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+              className={fieldClass}
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <label htmlFor="email" className="text-sm font-medium">
               Email
             </label>
@@ -140,25 +143,28 @@ export function CheckoutForm() {
               id="email"
               name="email"
               type="email"
+              inputMode="email"
               required
               autoComplete="email"
-              className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+              className={fieldClass}
             />
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+          <div className="min-w-0">
             <label htmlFor="phone" className="text-sm font-medium">
               Phone (optional)
             </label>
             <input
               id="phone"
               name="phone"
+              type="tel"
+              inputMode="tel"
               autoComplete="tel"
-              className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+              className={fieldClass}
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <label htmlFor="companyName" className="text-sm font-medium">
               Company (optional)
             </label>
@@ -166,12 +172,12 @@ export function CheckoutForm() {
               id="companyName"
               name="companyName"
               autoComplete="organization"
-              className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+              className={fieldClass}
             />
           </div>
         </div>
         {needsShipping ? (
-          <div>
+          <div className="min-w-0">
             <label htmlFor="shippingAddress" className="text-sm font-medium">
               Shipping address
             </label>
@@ -180,7 +186,7 @@ export function CheckoutForm() {
               name="shippingAddress"
               required
               rows={4}
-              className="mt-1 w-full rounded-md border border-white/15 bg-background px-3 py-2"
+              className="mt-1 min-h-28 w-full max-w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm"
             />
           </div>
         ) : (
@@ -197,17 +203,25 @@ export function CheckoutForm() {
           </a>
           . Legal pages require review before launch.
         </p>
-        <Button type="submit" disabled={status === "loading" || !!quoteError}>
-          {status === "loading" ? "Starting payment…" : "Pay securely"}
-        </Button>
         {error ? (
-          <p role="status" className="text-sm text-danger">
+          <p role="alert" className="text-sm text-danger">
             {error}
           </p>
         ) : null}
+        <div className="sticky bottom-0 z-10 -mx-4 border-t border-white/10 bg-background-elevated/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={status === "loading" || !!quoteError}
+            aria-busy={status === "loading"}
+          >
+            {status === "loading" ? "Starting payment…" : "Pay securely"}
+          </Button>
+        </div>
       </div>
 
-      <aside className="h-fit rounded-lg border border-white/10 bg-background-elevated/40 p-5">
+      <aside className="order-first h-fit min-w-0 rounded-lg border border-white/10 bg-background-elevated/40 p-4 sm:p-5 lg:order-none">
         <h2 className="font-display text-lg font-semibold">Order summary</h2>
         <ul className="mt-4 space-y-3 text-sm">
           {lines.map((line) => (
