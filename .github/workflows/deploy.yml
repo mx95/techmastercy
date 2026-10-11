@@ -21,6 +21,9 @@ permissions:
 
 env:
   NODE_VERSION: "22"
+  # prisma generate (postinstall) requires DATABASE_URL via prisma.config.ts
+  DATABASE_URL: file:./ci-build.db
+  SESSION_SECRET: ci-session-secret-at-least-32-characters-long
 
 jobs:
   quality:
@@ -52,8 +55,6 @@ jobs:
       - name: Production build
         run: npm run build
         env:
-          DATABASE_URL: file:./ci-build.db
-          SESSION_SECRET: ci-session-secret-at-least-32-characters-long
           NODE_ENV: production
 
   deploy:
