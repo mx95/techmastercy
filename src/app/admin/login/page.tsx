@@ -25,8 +25,9 @@ export default function AdminLoginPage() {
         setError(data.error || "Login failed.");
         return;
       }
-      router.replace("/admin");
-      router.refresh();
+      // Full navigation so the session cookie is included on the next request.
+      window.location.assign("/admin");
+      return;
     } catch {
       setError("Network error. Please try again.");
     } finally {

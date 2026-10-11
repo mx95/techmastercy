@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import bcrypt from "bcryptjs";
 import { getSessionSecret } from "@/lib/config";
 import { prisma } from "@/lib/db";
@@ -15,6 +15,25 @@ export type AdminSession = {
 
 function secretKey() {
   return new TextEncoder().encode(getSessionSecret());
+}
+
+/**
+ * Only mark cookies Secure when the browser is actually on HTTPS.
+ * Production over http://IP (pre-DNS) must not use Secure, or the session is dropped.
+ */
+async function cookieSecureFlag(): Promise<boolean> {
+  if (process.env.COOKIE_SECURE === "true") return true;
+  if (process.env.COOKIE_SECURE === "false") return false;
+
+  const h = await headers();
+  const forwarded = h.get("x-forwarded-proto") || h.get("x-forwarded-protocol");
+  if (forwarded) {
+    return forwarded.split(",")[0]?.trim().toLowerCase() === "https";
+  }
+
+  // Fall back only when proxy headers are absent.
+  const appUrl = process.env.APP_URL || process.env.SITE_URL || "";
+  return appUrl.startsWith("https://");
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -44,9 +63,10 @@ export async function createAdminSession(user: {
     .sign(secretKey());
 
   const jar = await cookies();
+  const secure = await cookieSecureFlag();
   jar.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     sameSite: "lax",
     path: "/",
     maxAge: MAX_AGE,
@@ -55,9 +75,10 @@ export async function createAdminSession(user: {
 
 export async function destroyAdminSession(): Promise<void> {
   const jar = await cookies();
+  const secure = await cookieSecureFlag();
   jar.set(COOKIE_NAME, "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     sameSite: "lax",
     path: "/",
     maxAge: 0,
