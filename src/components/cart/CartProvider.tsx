@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { resolveVolumeUnitPrice } from "@/content/product-bundles";
 
 export type CartLine = {
   productId: string;
@@ -147,13 +148,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
           (line) => lineKey(line.productId, line.licenceOptionId) === key,
         );
         if (existing) {
-          return current.map((line) =>
-            lineKey(line.productId, line.licenceOptionId) === key
-              ? { ...line, quantity: Math.min(99, line.quantity + quantity) }
-              : line,
-          );
+          return current.map((line) => {
+            if (lineKey(line.productId, line.licenceOptionId) !== key) return line;
+            const nextQty = Math.min(99, line.quantity + quantity);
+            return {
+              ...line,
+              quantity: nextQty,
+              unitPriceCents: line.licenceOptionId
+                ? line.unitPriceCents
+                : resolveVolumeUnitPrice(line.slug, nextQty, item.unitPriceCents),
+            };
+          });
         }
-        return [...current, { ...item, quantity: Math.min(99, quantity) }];
+        const nextQty = Math.min(99, quantity);
+        return [
+          ...current,
+          {
+            ...item,
+            quantity: nextQty,
+            unitPriceCents: item.licenceOptionId
+              ? item.unitPriceCents
+              : resolveVolumeUnitPrice(item.slug, nextQty, item.unitPriceCents),
+          },
+        ];
       });
       setIsOpen(true);
     },
@@ -170,12 +187,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
               lineKey(productId, licenceOptionId),
           );
         }
-        return current.map((line) =>
-          lineKey(line.productId, line.licenceOptionId) ===
-          lineKey(productId, licenceOptionId)
-            ? { ...line, quantity: Math.min(99, quantity) }
-            : line,
-        );
+        return current.map((line) => {
+          if (
+            lineKey(line.productId, line.licenceOptionId) !==
+            lineKey(productId, licenceOptionId)
+          ) {
+            return line;
+          }
+          const nextQty = Math.min(99, quantity);
+          return {
+            ...line,
+            quantity: nextQty,
+            unitPriceCents: line.licenceOptionId
+              ? line.unitPriceCents
+              : resolveVolumeUnitPrice(line.slug, nextQty, line.unitPriceCents),
+          };
+        });
       });
     },
     [setLines],

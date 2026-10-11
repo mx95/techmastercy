@@ -1,3 +1,4 @@
+import { resolveVolumeUnitPrice } from "@/content/product-bundles";
 import { prisma } from "@/lib/db";
 import { calculateTaxPortion, sumLineTotals } from "@/lib/money";
 import { getTaxConfig } from "@/lib/config";
@@ -37,7 +38,11 @@ export async function validateCheckoutLines(
       throw new CheckoutValidationError(`${product.name} does not have enough stock.`);
     }
 
-    let unitPriceCents = product.priceCents;
+    let unitPriceCents = resolveVolumeUnitPrice(
+      product.slug,
+      line.quantity,
+      product.priceCents,
+    );
     let licenceOptionId: string | null = null;
     let licenceName: string | null = null;
 

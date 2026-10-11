@@ -86,4 +86,37 @@ describe("validateCheckoutLines", () => {
     expect(lines[0]?.lineTotalCents).toBe(998);
     expect(lines[0]?.unitPriceCents).toBe(499);
   });
+
+  it("applies mini airtag volume pack unit prices", async () => {
+    const product = await prisma.product.create({
+      data: {
+        slug: "mini-airtag-finder",
+        name: "Mini AirTag Finder",
+        shortDescription: "Tracker",
+        description: "Tracker",
+        status: "PUBLISHED",
+        type: "PHYSICAL",
+        priceCents: 799,
+        stock: 25,
+      },
+    });
+
+    const one = await validateCheckoutLines([
+      { productId: product.id, quantity: 1 },
+    ]);
+    expect(one[0]?.unitPriceCents).toBe(799);
+    expect(one[0]?.lineTotalCents).toBe(799);
+
+    const two = await validateCheckoutLines([
+      { productId: product.id, quantity: 2 },
+    ]);
+    expect(two[0]?.unitPriceCents).toBe(599);
+    expect(two[0]?.lineTotalCents).toBe(1198);
+
+    const four = await validateCheckoutLines([
+      { productId: product.id, quantity: 4 },
+    ]);
+    expect(four[0]?.unitPriceCents).toBe(499);
+    expect(four[0]?.lineTotalCents).toBe(1996);
+  });
 });

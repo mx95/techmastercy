@@ -70,8 +70,18 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
           </h1>
           <p className="mt-4 text-foreground-muted">{product.shortDescription}</p>
           <div className="mt-4 flex flex-wrap items-baseline gap-3">
+            {volumeBundles?.packs.length ? (
+              <span className="text-sm text-foreground-muted">From</span>
+            ) : null}
             <span className="text-3xl font-semibold text-accent-soft">
-              {formatEur(product.priceCents)}
+              {formatEur(
+                volumeBundles?.packs.length
+                  ? Math.min(
+                      ...volumeBundles.packs.map((pack) => pack.unitPriceCents),
+                      product.priceCents,
+                    )
+                  : product.priceCents,
+              )}
             </span>
             {product.compareAtCents && product.compareAtCents > product.priceCents ? (
               <span className="text-foreground-muted line-through">
@@ -80,7 +90,9 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
             ) : null}
           </div>
           <p className="mt-2 text-xs text-foreground-muted">
-            Prices in EUR. Final totals are calculated and validated on the server at checkout.
+            {volumeBundles?.packs.length
+              ? `Single ${formatEur(product.priceCents)}. Pack prices apply at checkout.`
+              : "Prices in EUR. Final totals are calculated and validated on the server at checkout."}
           </p>
 
           <div className="mt-8">

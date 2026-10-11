@@ -3,7 +3,10 @@
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { Button } from "@/components/site/Button";
-import type { ProductBundleConfig } from "@/content/product-bundles";
+import {
+  resolveVolumeUnitPrice,
+  type ProductBundleConfig,
+} from "@/content/product-bundles";
 import { formatEur } from "@/lib/money";
 
 type Licence = {
@@ -41,7 +44,11 @@ export function AddToCartForm({
     [licenceId, licences],
   );
 
-  const unitPrice = selectedLicence?.priceCents ?? product.priceCents;
+  const unitPrice = useMemo(() => {
+    if (selectedLicence) return selectedLicence.priceCents;
+    return resolveVolumeUnitPrice(product.slug, quantity, product.priceCents);
+  }, [product.priceCents, product.slug, quantity, selectedLicence]);
+
   const soldOut = product.type === "PHYSICAL" && stock !== null && stock <= 0;
   const maxQty =
     product.type === "PHYSICAL" && stock !== null && stock > 0
@@ -133,7 +140,7 @@ export function AddToCartForm({
           <div className="grid gap-2">
             {availablePacks.map((pack) => {
               const selected = activePackQty === pack.quantity;
-              const packTotal = unitPrice * pack.quantity;
+              const packTotal = pack.unitPriceCents * pack.quantity;
               return (
                 <label
                   key={pack.quantity}
@@ -161,11 +168,9 @@ export function AddToCartForm({
                           </span>
                         ) : null}
                       </span>
-                      {pack.quantity > 1 ? (
-                        <span className="mt-0.5 block text-xs text-foreground-muted">
-                          {pack.quantity} × {formatEur(unitPrice)}
-                        </span>
-                      ) : null}
+                      <span className="mt-0.5 block text-xs text-foreground-muted">
+                        {pack.quantity} × {formatEur(pack.unitPriceCents)}
+                      </span>
                     </span>
                   </span>
                   <span className="shrink-0 text-sm font-semibold text-accent-soft">
@@ -216,11 +221,10 @@ export function AddToCartForm({
           {stock !== null ? (
             <p className="mt-2 text-xs text-foreground-muted">{stock} in stock</p>
           ) : null}
-          {quantity > 1 ? (
-            <p className="mt-1 text-xs text-foreground-muted">
-              Line total {formatEur(unitPrice * quantity)}
-            </p>
-          ) : null}
+          <p className="mt-1 text-xs text-foreground-muted">
+            {formatEur(unitPrice)} each
+            {quantity > 1 ? ` · line total ${formatEur(unitPrice * quantity)}` : ""}
+          </p>
         </div>
       ) : null}
 
