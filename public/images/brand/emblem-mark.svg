@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 208 284" width="1024" height="1396">
+  <!-- T: beveled bar + short stem -->
+  <path fill="#ffffff" d="
+    M 44 2
+    H 164
+    L 204 46
+    V 56
+    H 126
+    V 108
+    H 82
+    V 56
+    H 4
+    V 46
+    Z
+  "/>
+  <!-- M: tall vertical legs, deep V notch, single bottom tip -->
+  <path fill="#ffffff" fill-rule="evenodd" d="
+    M 4 124
+    H 204
+    V 220
+    L 104 282
+    L 4 220
+    Z
+
+    M 54 124
+    H 154
+    L 104 214
+    Z
+  "/>
+</svg>
