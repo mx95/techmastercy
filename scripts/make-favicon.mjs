@@ -3,79 +3,46 @@ import path from "node:path";
 import sharp from "sharp";
 
 /**
- * Crisp favicon from a clean geometric SVG of the Techmaster mark.
- * Matches emblem-black-on-white: T above a gap, M with vertical legs + deep V.
+ * Favicon from the same header emblem (emblem-black-on-white.png),
+ * cropped to a circle with a slightly tighter trim so the mark fills more.
+ * Does not modify header/logo components or the source emblem file.
  */
 
-const MARK_SVG = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 208 284" width="1024" height="1396">
-  <!-- T: beveled bar + short stem -->
-  <path fill="#ffffff" d="
-    M 44 2
-    H 164
-    L 204 46
-    V 56
-    H 126
-    V 108
-    H 82
-    V 56
-    H 4
-    V 46
-    Z
-  "/>
-  <!-- M: tall vertical legs, deep V notch, single bottom tip -->
-  <path fill="#ffffff" fill-rule="evenodd" d="
-    M 4 124
-    H 204
-    V 220
-    L 104 282
-    L 4 220
-    Z
+const SRC = path.join("public", "images", "brand", "emblem-black-on-white.png");
+/** >1 zooms in before the circular mask (trims white margin). */
+const TRIM_ZOOM = 1.28;
 
-    M 54 124
-    H 154
-    L 104 214
-    Z
-  "/>
-</svg>`;
-
-fs.writeFileSync(
-  path.join("public", "images", "brand", "emblem-mark.svg"),
-  MARK_SVG,
-);
-
-async function circularIcon(size, fillRatio = 0.82) {
+async function circularFromEmblem(size) {
   const masterSize = 1024;
-  const markBox = Math.round(masterSize * fillRatio);
+  const zoomed = Math.round(masterSize * TRIM_ZOOM);
 
-  const mark = await sharp(Buffer.from(MARK_SVG), { density: 384 })
-    .resize(markBox, markBox, {
-      fit: "contain",
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
+  // Zoom in on the emblem, then center-crop back to masterSize.
+  const cropped = await sharp(SRC)
+    .resize(zoomed, zoomed, {
+      fit: "cover",
+      position: "centre",
       kernel: sharp.kernel.lanczos3,
     })
-    .png()
-    .toBuffer();
-
-  const circle = await sharp(
-    Buffer.from(
-      `<svg width="${masterSize}" height="${masterSize}" xmlns="http://www.w3.org/2000/svg"><circle cx="${masterSize / 2}" cy="${masterSize / 2}" r="${masterSize / 2}" fill="#0b1220"/></svg>`,
-    ),
-  )
-    .png()
-    .toBuffer();
-
-  const master = await sharp({
-    create: {
+    .extract({
+      left: Math.round((zoomed - masterSize) / 2),
+      top: Math.round((zoomed - masterSize) / 2),
       width: masterSize,
       height: masterSize,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
+    })
+    .ensureAlpha()
+    .png()
+    .toBuffer();
+
+  const circleMask = Buffer.from(
+    `<svg width="${masterSize}" height="${masterSize}" xmlns="http://www.w3.org/2000/svg"><circle cx="${masterSize / 2}" cy="${masterSize / 2}" r="${masterSize / 2}" fill="#fff"/></svg>`,
+  );
+
+  const master = await sharp(cropped)
     .composite([
-      { input: circle, gravity: "centre" },
-      { input: mark, gravity: "centre" },
+      {
+        input: await sharp(circleMask).png().toBuffer(),
+        blend: "dest-in",
+      },
     ])
     .png()
     .toBuffer();
@@ -84,7 +51,7 @@ async function circularIcon(size, fillRatio = 0.82) {
 
   return sharp(master)
     .resize(size, size, { kernel: sharp.kernel.lanczos3 })
-    .sharpen({ sigma: size <= 32 ? 0.5 : 0.3, m1: 0.65, m2: 0.3 })
+    .sharpen({ sigma: size <= 32 ? 0.45 : 0.25, m1: 0.6, m2: 0.3 })
     .png()
     .toBuffer();
 }
@@ -121,11 +88,11 @@ async function writeIco(pngBuffers, sizes, outPath) {
   fs.writeFileSync(outPath, out);
 }
 
-const master1024 = await circularIcon(1024, 0.82);
-const icon16 = await circularIcon(16, 0.82);
-const icon32 = await circularIcon(32, 0.82);
-const icon48 = await circularIcon(48, 0.82);
-const apple = await circularIcon(180, 0.82);
+const master1024 = await circularFromEmblem(1024);
+const icon16 = await circularFromEmblem(16);
+const icon32 = await circularFromEmblem(32);
+const icon48 = await circularFromEmblem(48);
+const apple = await circularFromEmblem(180);
 
 fs.writeFileSync(path.join("src", "app", "icon.png"), icon32);
 fs.writeFileSync(path.join("src", "app", "apple-icon.png"), apple);
@@ -148,15 +115,4 @@ fs.writeFileSync(
     .toBuffer(),
 );
 
-fs.writeFileSync(
-  path.join("public", "images", "brand", "favicon-mark-preview.png"),
-  await sharp(Buffer.from(MARK_SVG), { density: 384 })
-    .resize(256, 256, {
-      fit: "contain",
-      background: { r: 11, g: 18, b: 32, alpha: 1 },
-    })
-    .png()
-    .toBuffer(),
-);
-
-console.log("crisp T+M SVG favicons written");
+console.log("favicon from header emblem, tighter circular trim");
