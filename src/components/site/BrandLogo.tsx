@@ -36,7 +36,7 @@ export function BrandLogo({
         alt=""
         width={48}
         height={48}
-        className="h-8 w-8 shrink-0 rounded-md object-contain sm:h-10 sm:w-10"
+        className="h-8 w-8 shrink-0 rounded-full object-cover sm:h-10 sm:w-10"
         priority={priority}
         aria-hidden
       />
