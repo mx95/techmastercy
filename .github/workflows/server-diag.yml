@@ -1,5 +1,4 @@
-# Stage disk-recovery script on the VPS (tmpfs) for root to run.
-# tmcdeploy cannot prune Docker itself: ctl is empty and user is not in docker group.
+# Post-recover verification: disk, ctl, deploy, HTTPS, health.
 name: Server access check
 
 on:
@@ -12,80 +11,57 @@ permissions:
   contents: read
 
 jobs:
-  recover:
-    name: Deploy prune script
+  verify:
+    name: Verify + finish deploy
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     environment: production
     steps:
-      - name: Stage recover-disk.sh on tmpfs
+      - name: Disk, ctl, deploy, HTTPS, health
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          command_timeout: 10m
+          command_timeout: 40m
           script: |
-            set +e
-            set -u
-            SHM=/dev/shm/tmc-recover
+            set -euo pipefail
             APP=/opt/techmastercy
             CTL=/usr/local/sbin/techmastercy-ctl
             BRANCH=cursor/server-access-diag-aabd
-            RAW=https://raw.githubusercontent.com/mx95/techmastercy/${BRANCH}
 
-            echo "===== before ====="
-            date -u
-            id
-            df -h / /dev/shm /tmp
-            ls -la "$CTL" 2>/dev/null
-            sudo -n -l 2>&1 | head -n 5
-
-            rm -rf "$SHM"
-            mkdir -p "$SHM" || { echo "FATAL: cannot mkdir /dev/shm"; exit 1; }
-
-            # Free anything we own (does not free Docker's ~36G).
-            find /tmp -user "$(id -un)" -mindepth 1 -maxdepth 2 -exec rm -rf {} + 2>/dev/null
-            if [ -d "$APP" ]; then
-              find "$APP" -mindepth 1 -maxdepth 1 ! -name '.env' ! -name '.deploy' ! -name 'deploy.root-owned.bak' \
-                -exec rm -rf {} + 2>/dev/null
-            fi
-
-            curl -fsSL "$RAW/deploy/recover-disk.sh" -o "$SHM/recover.sh"
-            curl -fsSL "$RAW/deploy/techmastercy-ctl.sh" -o "$SHM/techmastercy-ctl.sh"
-            chmod 755 "$SHM/recover.sh" "$SHM/techmastercy-ctl.sh"
-            # /tmp is tmpfs on this host — survives better than writing to full root FS
-            cp -f "$SHM/recover.sh" /tmp/tmc-recover.sh
-            cp -f "$SHM/techmastercy-ctl.sh" /tmp/tmc-ctl.sh
-            chmod 755 /tmp/tmc-recover.sh /tmp/tmc-ctl.sh
-            ln -sfn "$SHM" "$APP/deploy" 2>/dev/null
-
-            # Empty ctl → these are no-ops today; retry in case something restored it.
-            sudo -n "$CTL" prune 2>&1 | tail -n 20
+            echo "===== disk / ctl ====="
             df -h /
+            ls -la "$CTL"
+            sudo -n wc -c "$CTL"
+            sudo -n "$CTL" help | head -n 40
 
-            BYTES=$(stat -c%s "$CTL" 2>/dev/null || echo 0)
-            echo "ctl_bytes=$BYTES"
-            echo "===== staged ====="
-            ls -la /tmp/tmc-recover.sh "$SHM/recover.sh" "$SHM/techmastercy-ctl.sh"
-            wc -c /tmp/tmc-recover.sh "$SHM/recover.sh"
-
-            if [ "${BYTES:-0}" -gt 100 ]; then
-              echo "CTL live — pruning/deploying"
-              sudo -n "$CTL" prune
-              git -C "$APP" init 2>/dev/null
+            echo "===== ensure checkout ====="
+            mkdir -p "$APP"
+            if [ ! -d "$APP/.git" ]; then
+              git -C "$APP" init
               git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git 2>/dev/null \
                 || git -C "$APP" remote set-url origin https://github.com/mx95/techmastercy.git
-              git -C "$APP" fetch --prune origin
-              SHA=$(git -C "$APP" rev-parse "origin/${BRANCH}")
-              sudo -n "$CTL" deploy "$SHA"
-              sudo -n "$CTL" enable-https techmaster.com.cy 46.225.180.168 || true
-              sudo -n "$CTL" health || true
-              df -h /
-              exit 0
             fi
+            # Drop tmpfs symlinks from recovery staging if present
+            if [ -L "$APP/deploy" ]; then rm -f "$APP/deploy"; fi
+            if [ -L "$APP/docker-compose.yml" ]; then rm -f "$APP/docker-compose.yml"; fi
+            git -C "$APP" fetch --prune origin
+            SHA=$(git -C "$APP" rev-parse "origin/${BRANCH}")
+            echo "Deploying $SHA"
 
-            echo "STAGED — root must run: bash /tmp/tmc-recover.sh"
-            echo "Or: curl -fsSL $RAW/deploy/recover-disk.sh | bash"
-            exit 1
+            echo "===== prune (safe) + deploy ====="
+            sudo -n "$CTL" prune || true
+            df -h /
+            sudo -n "$CTL" deploy "$SHA"
+            sudo -n "$CTL" enable-https techmaster.com.cy 46.225.180.168 || true
+            sudo -n "$CTL" health
+            sudo -n "$CTL" status || true
+
+            echo "===== local probes ====="
+            curl -fsS --max-time 5 http://127.0.0.1:3000/api/health || true
+            curl -fsS --max-time 5 -k https://127.0.0.1/api/health || true
+            curl -fsS --max-time 5 http://127.0.0.1/api/health || true
+            df -h /
+            echo "===== done ====="
