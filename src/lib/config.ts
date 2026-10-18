@@ -41,9 +41,14 @@ export function getSessionSecret(): string {
   return secret;
 }
 
-export function getPaymentProviderName(): "mock" | "jcc" {
+export type PaymentProviderName = "mock" | "jcc" | "revolut_link";
+
+export function getPaymentProviderName(): PaymentProviderName {
   const name = (process.env.PAYMENT_PROVIDER || "mock").toLowerCase();
   if (name === "jcc") return "jcc";
+  if (name === "revolut_link" || name === "revolut-link" || name === "revolut") {
+    return "revolut_link";
+  }
   return "mock";
 }
 

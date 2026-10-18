@@ -53,6 +53,7 @@ Use the ED25519 value in `DEPLOY_SSH_FINGERPRINT`.
 |----------|---------|----------|
 | `.github/workflows/ci.yml` | `pull_request` + `push` to `main` | No |
 | `.github/workflows/deploy.yml` | `push` to `main` + `workflow_dispatch` | Yes, after quality job |
+| `.github/workflows/domain-cutover.yml` | `workflow_dispatch` (+ push on cutover branch) | No — updates Cloudflare DNS to Hetzner |
 
 Production deployments are serialized via `concurrency: production-deploy`.
 

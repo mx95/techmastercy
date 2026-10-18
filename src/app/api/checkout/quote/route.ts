@@ -5,6 +5,8 @@ import {
   CheckoutValidationError,
   validateCheckoutLines,
 } from "@/lib/checkout";
+import { getPaymentProviderName } from "@/lib/config";
+import { resolveRevolutLinkPayment } from "@/lib/payments/revolut-link";
 import { cartLineSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +34,40 @@ export async function POST(request: Request) {
   try {
     const lines = await validateCheckoutLines(parsed.data.lines);
     const totals = calculateOrderTotals(lines);
+    const provider = getPaymentProviderName();
+
+    let payment:
+      | {
+          provider: string;
+          mode: "instant" | "deferred" | "unconfigured" | "gateway";
+          offerLabel?: string;
+          message?: string;
+          requirePhone?: boolean;
+        }
+      | undefined;
+
+    if (provider === "revolut_link") {
+      const resolution = resolveRevolutLinkPayment(
+        lines.map((line) => ({
+          slug: line.productSlug,
+          quantity: line.quantity,
+        })),
+      );
+      payment = {
+        provider,
+        mode: resolution.mode,
+        offerLabel: resolution.offer?.label,
+        message: resolution.message,
+        requirePhone: true,
+      };
+    } else {
+      payment = {
+        provider,
+        mode: "gateway",
+        requirePhone: false,
+      };
+    }
+
     return NextResponse.json({
       lines,
       subtotalCents: totals.subtotalCents,
@@ -40,6 +76,7 @@ export async function POST(request: Request) {
       totalCents: totals.totalCents,
       taxInclusive: totals.taxInclusive,
       currency: "EUR",
+      payment,
     });
   } catch (error) {
     if (error instanceof CheckoutValidationError) {

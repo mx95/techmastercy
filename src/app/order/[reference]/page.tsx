@@ -80,10 +80,37 @@ export default async function OrderPage({ params }: { params: Params }) {
           )}
         </div>
       ) : order.status === "AWAITING_PAYMENT" || order.paymentStatus === "REQUIRES_ACTION" ? (
-        <p className="mt-6 text-sm text-foreground-muted">
-          Waiting for payment confirmation from the provider. Refresh this page after completing
-          checkout. A redirect alone does not mark the order paid.
-        </p>
+        <div className="mt-6 max-w-2xl space-y-3 text-sm text-foreground-muted">
+          {order.paymentProvider === "revolut_link" &&
+          order.notes?.includes("revolut_link:deferred") ? (
+            <>
+              <p className="text-foreground">
+                Thanks — your order is reserved. This cart needed a custom Revolut payment link.
+              </p>
+              <p>
+                We will send the payment link to{" "}
+                <span className="text-white">{order.customerEmail}</span>
+                {order.customerPhone ? (
+                  <>
+                    {" "}
+                    or <span className="text-white">{order.customerPhone}</span>
+                  </>
+                ) : null}
+                . After you pay in Revolut, we confirm the order manually.
+              </p>
+            </>
+          ) : order.paymentProvider === "revolut_link" ? (
+            <p>
+              If you were redirected to Revolut, complete payment there. This page updates after we
+              confirm the payment (Revolut Pro links do not auto-notify the shop).
+            </p>
+          ) : (
+            <p>
+              Waiting for payment confirmation from the provider. Refresh this page after completing
+              checkout. A redirect alone does not mark the order paid.
+            </p>
+          )}
+        </div>
       ) : (
         <p className="mt-6 text-sm text-danger">
           This order is not paid ({order.status}). Contact support if you were charged unexpectedly.

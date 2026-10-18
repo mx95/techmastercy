@@ -8,8 +8,21 @@ TechmasterCY uses a small payment adapter interface (`src/lib/payments/types.ts`
 |----------|-----|-------------|
 | `mock` | `PAYMENT_PROVIDER=mock` | Local development and staging demos |
 | `jcc` | `PAYMENT_PROVIDER=jcc` | Live Cyprus card payments via JCC merchant credentials |
+| `revolut_link` | `PAYMENT_PROVIDER=revolut_link` | Revolut Pro static payment links (no Merchant API) |
 
 Factory: `getPaymentProvider()` in `src/lib/payments/index.ts`.
+
+## Revolut Pro payment links
+
+Used when Revolut Business / Merchant API is unavailable (e.g. freelancer → Pro only).
+
+1. Create Payment Links in the Revolut Pro app for each offer in `src/content/revolut-payment-offers.ts`.
+2. Set `PAYMENT_PROVIDER=revolut_link` and the matching `REVOLUT_LINK_*` URLs in `.env`.
+3. **Matched cart** → checkout redirects to that Revolut link.
+4. **Unmatched cart** → order is stored; customer is told a link will be sent by email/phone (phone required).
+5. After payment appears in Revolut, use **Admin → Orders → Mark paid** (Pro links have no webhooks).
+
+Current static offers: Ottocast ×1; AirTag ×1/×2/×4; Ottocast+AirTag ×1; Ottocast+AirTag×2.
 
 ## Mock payments
 

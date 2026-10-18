@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { prisma } from "@/lib/db";
 import { formatEur } from "@/lib/money";
+import { MarkPaidButton } from "./mark-paid-button";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,10 @@ export default async function AdminOrdersPage() {
   return (
     <div>
       <h1 style={{ marginTop: 0 }}>Orders</h1>
-      <p style={{ opacity: 0.7 }}>Most recent orders (up to 200).</p>
+      <p style={{ opacity: 0.7 }}>
+        Most recent orders (up to 200). Use <strong>Mark paid</strong> after confirming Revolut Pro
+        payment links in the app.
+      </p>
       <div style={{ overflowX: "auto", marginTop: "1rem" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.92rem" }}>
           <thead>
@@ -25,31 +29,47 @@ export default async function AdminOrdersPage() {
               <th style={th}>Payment</th>
               <th style={th}>Total</th>
               <th style={th}>Created</th>
+              <th style={th}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                <td style={td}>
-                  <div style={{ fontWeight: 600 }}>{order.reference}</div>
-                  <div style={{ opacity: 0.6, fontSize: "0.8rem" }}>
-                    {order.items.length} item(s)
-                    {order.paymentProvider ? ` · ${order.paymentProvider}` : ""}
-                  </div>
-                </td>
-                <td style={td}>
-                  <div>{order.customerName}</div>
-                  <div style={{ opacity: 0.65 }}>{order.customerEmail}</div>
-                </td>
-                <td style={td}>{order.status}</td>
-                <td style={td}>{order.paymentStatus}</td>
-                <td style={td}>{formatEur(order.totalCents)}</td>
-                <td style={td}>{order.createdAt.toISOString().slice(0, 19)}Z</td>
-              </tr>
-            ))}
+            {orders.map((order) => {
+              const unpaid =
+                order.paymentStatus !== "CAPTURED" && order.status !== "PAID";
+              return (
+                <tr key={order.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <td style={td}>
+                    <div style={{ fontWeight: 600 }}>{order.reference}</div>
+                    <div style={{ opacity: 0.6, fontSize: "0.8rem" }}>
+                      {order.items.length} item(s)
+                      {order.paymentProvider ? ` · ${order.paymentProvider}` : ""}
+                    </div>
+                    {order.notes ? (
+                      <div style={{ opacity: 0.55, fontSize: "0.75rem", marginTop: 4 }}>
+                        {order.notes.split("\n")[0]}
+                      </div>
+                    ) : null}
+                  </td>
+                  <td style={td}>
+                    <div>{order.customerName}</div>
+                    <div style={{ opacity: 0.65 }}>{order.customerEmail}</div>
+                    {order.customerPhone ? (
+                      <div style={{ opacity: 0.65 }}>{order.customerPhone}</div>
+                    ) : null}
+                  </td>
+                  <td style={td}>{order.status}</td>
+                  <td style={td}>{order.paymentStatus}</td>
+                  <td style={td}>{formatEur(order.totalCents)}</td>
+                  <td style={td}>{order.createdAt.toISOString().slice(0, 19)}Z</td>
+                  <td style={td}>
+                    <MarkPaidButton orderId={order.id} disabled={!unpaid} />
+                  </td>
+                </tr>
+              );
+            })}
             {orders.length === 0 ? (
               <tr>
-                <td style={td} colSpan={6}>
+                <td style={td} colSpan={7}>
                   No orders yet.
                 </td>
               </tr>

@@ -12,7 +12,7 @@ Stack: **Next.js 16 (App Router)**, **Prisma + SQLite**, payment adapters (mock 
   - Ottocast Cabin Care — €89.99 (was €124.99), stock 0 (sold out on Shopify)
   - Mini AirTag Finder — €4.99
   - Webhook Reliability Kit — draft/unpublished (€49 / €149 licence options)
-- Server-priced checkout + quote verification; mock payments (dev) and JCC adapter skeleton
+- Server-priced checkout + quote verification; mock payments (dev), Revolut Pro static payment links, and JCC adapter skeleton
 - Idempotent payment webhooks; tokenised digital downloads from a private directory
 - Contact enquiries with honeypot + rate limit + optional SMTP
 - Admin login, product publish/price/stock, orders & enquiries

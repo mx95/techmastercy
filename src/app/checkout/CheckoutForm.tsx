@@ -5,11 +5,20 @@ import { useCart } from "@/components/cart/CartProvider";
 import { Button } from "@/components/site/Button";
 import { formatEur } from "@/lib/money";
 
+type PaymentHint = {
+  provider: string;
+  mode: "instant" | "deferred" | "unconfigured" | "gateway";
+  offerLabel?: string;
+  message?: string;
+  requirePhone?: boolean;
+};
+
 type Quote = {
   subtotalCents: number;
   taxCents: number;
   totalCents: number;
   taxInclusive: boolean;
+  payment?: PaymentHint;
 };
 
 export function CheckoutForm() {
@@ -81,16 +90,19 @@ export function CheckoutForm() {
       });
       const data = (await res.json()) as {
         redirectUrl?: string;
-        reference?: string;
+        orderReference?: string;
+        mode?: string;
+        message?: string;
         error?: string;
       };
-      if (!res.ok || (!data.redirectUrl && !data.reference)) {
+      if (!res.ok || (!data.redirectUrl && !data.orderReference)) {
         setStatus("error");
         setError(data.error || "Checkout failed.");
         return;
       }
       clearCart();
-      window.location.href = data.redirectUrl || `/order/${data.reference}`;
+      window.location.href =
+        data.redirectUrl || `/order/${data.orderReference}`;
     } catch {
       setStatus("error");
       setError("Network error during checkout.");
@@ -113,9 +125,18 @@ export function CheckoutForm() {
   }
 
   const needsShipping = lines.some((l) => l.type === "PHYSICAL");
+  const requirePhone = quote?.payment?.requirePhone === true;
+  const payment = quote?.payment;
+  const submitDisabled =
+    status === "loading" || !!quoteError || payment?.mode === "unconfigured";
 
   const fieldClass =
     "mt-1 min-h-11 w-full max-w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm";
+
+  let submitLabel = "Pay securely";
+  if (status === "loading") submitLabel = "Starting payment…";
+  else if (payment?.mode === "deferred") submitLabel = "Place order — link by email/phone";
+  else if (payment?.mode === "instant") submitLabel = "Pay with Revolut";
 
   return (
     <form onSubmit={onSubmit} className="grid min-w-0 gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:gap-8">
@@ -153,13 +174,15 @@ export function CheckoutForm() {
         <div className="grid min-w-0 gap-4 sm:grid-cols-2">
           <div className="min-w-0">
             <label htmlFor="phone" className="text-sm font-medium">
-              Phone (optional)
+              Phone{requirePhone ? "" : " (optional)"}
             </label>
             <input
               id="phone"
               name="phone"
               type="tel"
               inputMode="tel"
+              required={requirePhone}
+              minLength={requirePhone ? 6 : undefined}
               autoComplete="tel"
               className={fieldClass}
             />
@@ -213,10 +236,10 @@ export function CheckoutForm() {
             type="submit"
             size="lg"
             className="w-full sm:w-auto"
-            disabled={status === "loading" || !!quoteError}
+            disabled={submitDisabled}
             aria-busy={status === "loading"}
           >
-            {status === "loading" ? "Starting payment…" : "Pay securely"}
+            {submitLabel}
           </Button>
         </div>
       </div>
@@ -261,6 +284,27 @@ export function CheckoutForm() {
             <p className="text-foreground-muted">Validating prices…</p>
           )}
         </div>
+
+        {payment?.provider === "revolut_link" ? (
+          <div
+            className={`mt-4 rounded-md border px-3 py-3 text-sm ${
+              payment.mode === "deferred"
+                ? "border-accent/40 bg-accent/10 text-foreground"
+                : payment.mode === "unconfigured"
+                  ? "border-danger/40 bg-danger/10 text-danger"
+                  : "border-white/15 bg-background/40 text-foreground-muted"
+            }`}
+          >
+            {payment.mode === "instant" ? (
+              <p>
+                Ready-made Revolut link for <strong>{payment.offerLabel}</strong>. You will be
+                redirected to Revolut to pay.
+              </p>
+            ) : null}
+            {payment.mode === "deferred" ? <p>{payment.message}</p> : null}
+            {payment.mode === "unconfigured" ? <p>{payment.message}</p> : null}
+          </div>
+        ) : null}
       </aside>
     </form>
   );
