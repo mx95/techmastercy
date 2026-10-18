@@ -76,10 +76,23 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          command_timeout: 25m
+          command_timeout: 35m
           script: |
             set -euo pipefail
-            # tmcdeploy may only sudo /usr/local/sbin/techmastercy-ctl (nothing else).
+            echo "===== disk before ====="
+            df -h / /var/lib/docker 2>/dev/null || df -h /
+            echo "===== ctl help (what host ctl supports) ====="
+            sudo /usr/local/sbin/techmastercy-ctl help || true
+            # Free anything tmcdeploy can delete before git/docker need space.
+            echo "===== reclaim app-dir space ====="
+            du -sh /opt/techmastercy /opt/techmastercy/.git 2>/dev/null || true
+            rm -rf /opt/techmastercy/node_modules /opt/techmastercy/.next /tmp/* 2>/dev/null || true
+            # Drop unreachable git objects if pack is huge (best-effort).
+            git -C /opt/techmastercy gc --prune=now --aggressive 2>/dev/null || true
+            # Host ctl may already have prune (after a prior refresh).
+            sudo /usr/local/sbin/techmastercy-ctl prune || true
+            echo "===== disk after reclaim ====="
+            df -h / /var/lib/docker 2>/dev/null || df -h /
             git -C /opt/techmastercy fetch --prune origin
             BRANCH="cursor/server-access-diag-aabd"
             if git -C /opt/techmastercy rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
@@ -88,7 +101,6 @@ jobs:
               SHA="$(git -C /opt/techmastercy rev-parse origin/main)"
             fi
             echo "Target SHA ${SHA}"
-            # First deploy may fail on full disks, but refreshes host ctl from the tree.
             sudo /usr/local/sbin/techmastercy-ctl deploy "${SHA}" || true
             sudo /usr/local/sbin/techmastercy-ctl prune || true
             sudo /usr/local/sbin/techmastercy-ctl deploy "${SHA}"
