@@ -38,6 +38,9 @@ jobs:
 
             echo "===== ensure checkout ====="
             mkdir -p "$APP"
+            git config --global --add safe.directory "$APP"
+            # Recover ran as root; make tree writable for tmcdeploy where possible
+            find "$APP" -user root -maxdepth 2 2>/dev/null | head -n 20 || true
             if [ ! -d "$APP/.git" ]; then
               git -C "$APP" init
               git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git 2>/dev/null \
@@ -46,6 +49,8 @@ jobs:
             # Drop tmpfs symlinks from recovery staging if present
             if [ -L "$APP/deploy" ]; then rm -f "$APP/deploy"; fi
             if [ -L "$APP/docker-compose.yml" ]; then rm -f "$APP/docker-compose.yml"; fi
+            git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git 2>/dev/null \
+              || git -C "$APP" remote set-url origin https://github.com/mx95/techmastercy.git
             git -C "$APP" fetch --prune origin
             SHA=$(git -C "$APP" rev-parse "origin/${BRANCH}")
             echo "Deploying $SHA"
