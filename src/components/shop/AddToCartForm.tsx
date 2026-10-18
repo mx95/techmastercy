@@ -5,10 +5,24 @@ import { useCart } from "@/components/cart/CartProvider";
 import { Button } from "@/components/site/Button";
 import {
   packDisplayTotal,
+  resolveVolumeLineTotal,
   resolveVolumeUnitPrice,
   type ProductBundleConfig,
+  type ProductVolumePack,
 } from "@/content/product-bundles";
 import { formatEur } from "@/lib/money";
+
+function packOptionSubtitle(pack: ProductVolumePack): string {
+  const total = packDisplayTotal(pack);
+  if (pack.quantity === 1) {
+    return `${formatEur(total)} each`;
+  }
+  const unitTimesQty = pack.unitPriceCents * pack.quantity;
+  if (pack.packTotalCents != null && pack.packTotalCents !== unitTimesQty) {
+    return `${pack.quantity} for ${formatEur(total)}`;
+  }
+  return `${pack.quantity} × ${formatEur(pack.unitPriceCents)}`;
+}
 
 type Licence = {
   id: string;
@@ -48,6 +62,11 @@ export function AddToCartForm({
   const unitPrice = useMemo(() => {
     if (selectedLicence) return selectedLicence.priceCents;
     return resolveVolumeUnitPrice(product.slug, quantity, product.priceCents);
+  }, [product.priceCents, product.slug, quantity, selectedLicence]);
+
+  const lineTotal = useMemo(() => {
+    if (selectedLicence) return selectedLicence.priceCents * quantity;
+    return resolveVolumeLineTotal(product.slug, quantity, product.priceCents);
   }, [product.priceCents, product.slug, quantity, selectedLicence]);
 
   const soldOut = product.type === "PHYSICAL" && stock !== null && stock <= 0;
@@ -170,7 +189,7 @@ export function AddToCartForm({
                         ) : null}
                       </span>
                       <span className="mt-0.5 block text-xs text-foreground-muted">
-                        {pack.quantity} × {formatEur(pack.unitPriceCents)}
+                        {packOptionSubtitle(pack)}
                       </span>
                     </span>
                   </span>
@@ -223,8 +242,9 @@ export function AddToCartForm({
             <p className="mt-2 text-xs text-foreground-muted">{stock} in stock</p>
           ) : null}
           <p className="mt-1 text-xs text-foreground-muted">
-            {formatEur(unitPrice)} each
-            {quantity > 1 ? ` · line total ${formatEur(unitPrice * quantity)}` : ""}
+            {quantity === 1
+              ? `${formatEur(lineTotal)} each`
+              : `Line total ${formatEur(lineTotal)}`}
           </p>
         </div>
       ) : null}

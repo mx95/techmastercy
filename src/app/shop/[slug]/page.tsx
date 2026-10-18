@@ -42,6 +42,11 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
 
   const related = await getRelatedProducts(product.slug, 4);
   const volumeBundles = getProductVolumeBundles(product.slug);
+  const singlePack = volumeBundles?.packs.find((pack) => pack.quantity === 1);
+  const offerPriceCents =
+    singlePack?.packTotalCents ??
+    singlePack?.unitPriceCents ??
+    product.priceCents;
 
   const availability =
     product.type === "PHYSICAL" && product.stock !== null && product.stock <= 0
@@ -70,28 +75,26 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
           </h1>
           <p className="mt-4 text-foreground-muted">{product.shortDescription}</p>
           <div className="mt-4 flex flex-wrap items-baseline gap-3">
-            {volumeBundles?.packs.length ? (
-              <span className="text-sm text-foreground-muted">From</span>
-            ) : null}
             <span className="text-3xl font-semibold text-accent-soft">
-              {formatEur(
-                volumeBundles?.packs.length
-                  ? Math.min(
-                      ...volumeBundles.packs.map((pack) => pack.unitPriceCents),
-                      product.priceCents,
-                    )
-                  : product.priceCents,
-              )}
+              {formatEur(offerPriceCents)}
             </span>
-            {product.compareAtCents && product.compareAtCents > product.priceCents ? (
+            {product.compareAtCents && product.compareAtCents > offerPriceCents ? (
               <span className="text-foreground-muted line-through">
                 {formatEur(product.compareAtCents)}
               </span>
             ) : null}
           </div>
           <p className="mt-2 text-xs text-foreground-muted">
-            {volumeBundles?.packs.length
-              ? `Single ${formatEur(product.priceCents)}. Pack prices apply at checkout.`
+            {volumeBundles?.packs.some((pack) => pack.quantity > 1)
+              ? `Single ${formatEur(offerPriceCents)}. Packs: ${volumeBundles.packs
+                  .filter((pack) => pack.quantity > 1)
+                  .map(
+                    (pack) =>
+                      `${pack.quantity} for ${formatEur(
+                        pack.packTotalCents ?? pack.unitPriceCents * pack.quantity,
+                      )}`,
+                  )
+                  .join(" · ")}.`
               : "Prices in EUR. Final totals are calculated and validated on the server at checkout."}
           </p>
 
@@ -102,7 +105,7 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
                 slug: product.slug,
                 name: product.name,
                 type: product.type,
-                priceCents: product.priceCents,
+                priceCents: offerPriceCents,
                 images: product.images,
               }}
               licences={product.licences}
@@ -185,7 +188,7 @@ export default async function ProductDetailPage({ params }: { params: Params }) 
             name: product.name,
             description: product.shortDescription,
             path: `/shop/${product.slug}`,
-            priceCents: product.priceCents,
+            priceCents: offerPriceCents,
             images: product.images,
             availability,
           }),

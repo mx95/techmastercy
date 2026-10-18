@@ -1,11 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getProductVolumeBundles } from "@/content/product-bundles";
 import type { ProductCardData } from "@/lib/products";
 import { formatEur } from "@/lib/money";
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const image = product.images[0] || "/images/brand/logo-wordmark-on-light.png";
   const outOfStock = product.type === "PHYSICAL" && product.stock !== null && product.stock <= 0;
+  const volumeBundles = getProductVolumeBundles(product.slug);
+  const singlePack = volumeBundles?.packs.find((pack) => pack.quantity === 1);
+  const displayPriceCents =
+    singlePack?.packTotalCents ?? singlePack?.unitPriceCents ?? product.priceCents;
 
   return (
     <article className="surface group flex h-full min-w-0 flex-col overflow-hidden rounded-lg transition hover:border-accent/40">
@@ -40,9 +45,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </p>
         <div className="mt-4 flex flex-wrap items-baseline gap-2">
           <span className="text-lg font-semibold text-accent-soft">
-            {formatEur(product.priceCents)}
+            {formatEur(displayPriceCents)}
           </span>
-          {product.compareAtCents && product.compareAtCents > product.priceCents ? (
+          {product.compareAtCents && product.compareAtCents > displayPriceCents ? (
             <span className="text-sm text-foreground-muted line-through">
               {formatEur(product.compareAtCents)}
             </span>

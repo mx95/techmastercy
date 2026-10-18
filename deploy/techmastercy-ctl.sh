@@ -248,6 +248,14 @@ cmd_enable_https() {
   log "HTTPS enabled for ${domain}"
 }
 
+cmd_seed() {
+  require_root
+  require_env
+  log "seeding catalogue (upsert published products + admin)"
+  "${COMPOSE[@]}" exec -T app npx tsx prisma/seed.ts
+  log "seed complete"
+}
+
 usage() {
   cat <<'EOF'
 Usage: techmastercy-ctl <command> [args]
@@ -259,6 +267,7 @@ Commands:
   health                        Curl the local health endpoint
   logs [lines]                  Tail application logs (default 200)
   prune                         Free disk via docker builder/system prune
+  seed                          Upsert catalogue seed (fixes product prices)
   dns-check [domain] [ip]       Verify public DNS points at this server
   enable-https [domain] [ip]    Certbot + nginx HTTPS after DNS cut-over
 EOF
@@ -274,6 +283,7 @@ main() {
     health) cmd_health "$@" ;;
     logs) cmd_logs "$@" ;;
     prune) cmd_prune "$@" ;;
+    seed) cmd_seed "$@" ;;
     dns-check) cmd_dns_check "$@" ;;
     enable-https) cmd_enable_https "$@" ;;
     -h|--help|help|"") usage ;;

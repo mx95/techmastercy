@@ -529,6 +529,59 @@ export const services: ServicePage[] = [
     ],
   },
   {
+    slug: "smarthome-consulting-integration",
+    title: "Smarthome consulting and integration",
+    shortTitle: "Smarthome consulting",
+    category: "integrations",
+    summary:
+      "Practical consulting and integration for smart-home setups—cameras, hubs, finders, networking and related systems for homes and small businesses in Cyprus.",
+    problem:
+      "Smart-home products are easy to buy and hard to make work together reliably. Without a clear plan, devices stay siloed, Wi-Fi struggles, and support becomes guesswork.",
+    whoNeeds: [
+      "Homeowners planning cameras, finders or hub-based automation",
+      "Small businesses needing simple premises monitoring or access-related tech",
+      "People who already bought devices and need them integrated cleanly",
+    ],
+    included: [
+      "Needs assessment and device shortlist guidance",
+      "Network readiness check (Wi-Fi, power, mounting constraints)",
+      "Integration planning across apps, hubs and finders where applicable",
+      "Hands-on setup guidance or remote configuration support",
+      "Handover notes so you can operate the system day to day",
+    ],
+    deliverables: [
+      "Scoped recommendation for your space and budget",
+      "Configured integration against the agreed devices",
+      "Short operational notes for apps, accounts and troubleshooting",
+    ],
+    process: [
+      "Discovery: goals, rooms/sites, existing gear",
+      "Proposal: devices, exclusions and estimate",
+      "Setup and integration",
+      "Handover and optional follow-up support",
+    ],
+    pricing: {
+      label: "Indicative consulting pricing",
+      fromEur: 99,
+      note: "Discovery and setup are quoted from the agreed scope. Hardware is charged separately (shop or your own purchase).",
+    },
+    faqs: [
+      {
+        q: "Do you sell the devices?",
+        a: "Some related products appear in the TechmasterCY shop. You can also use hardware you already own or buy elsewhere—the consulting covers planning and integration.",
+      },
+      {
+        q: "Do you install on-site everywhere in Cyprus?",
+        a: "Remote guidance is always available. On-site work depends on location and is confirmed in the quote.",
+      },
+    ],
+    relatedKeywords: [
+      "Smarthome consulting Cyprus",
+      "Smart home integration Cyprus",
+      "Home automation setup Cyprus",
+    ],
+  },
+  {
     slug: "ai-automation-support-plans",
     title: "AI and automation support plans",
     shortTitle: "AI & support plans",

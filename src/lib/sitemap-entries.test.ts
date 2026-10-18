@@ -36,5 +36,6 @@ describe("sitemap exclusions", () => {
     expect(paths).toContain("/services/ai-automation");
     expect(paths).toContain("/services/ai-consulting-implementation");
     expect(paths).toContain("/services/technical-support");
+    expect(paths).toContain("/services/smarthome-consulting-integration");
   });
 });
