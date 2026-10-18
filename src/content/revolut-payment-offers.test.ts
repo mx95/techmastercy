@@ -12,15 +12,13 @@ describe("revolut payment offer matching", () => {
     expect(offer?.id).toBe("airtag-2");
   });
 
-  it("matches combo regardless of line order", () => {
-    const offer = findRevolutOffer([
-      { slug: "mini-airtag-finder", quantity: 1 },
-      { slug: "ottocast-cabin-care", quantity: 1 },
-    ]);
-    expect(offer?.id).toBe("ottocast-airtag-1");
-  });
-
-  it("defers unmatched carts", () => {
+  it("defers combos and other unmatched carts", () => {
+    expect(
+      findRevolutOffer([
+        { slug: "mini-airtag-finder", quantity: 1 },
+        { slug: "ottocast-cabin-care", quantity: 1 },
+      ]),
+    ).toBeNull();
     expect(
       findRevolutOffer([{ slug: "mini-airtag-finder", quantity: 3 }]),
     ).toBeNull();

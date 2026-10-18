@@ -19,6 +19,11 @@ type Quote = {
   totalCents: number;
   taxInclusive: boolean;
   payment?: PaymentHint;
+  lines?: Array<{
+    productId: string;
+    licenceOptionId: string | null;
+    lineTotalCents: number;
+  }>;
 };
 
 export function CheckoutForm() {
@@ -256,7 +261,16 @@ export function CheckoutForm() {
                 {line.name}
                 {line.licenceName ? ` (${line.licenceName})` : ""} × {line.quantity}
               </span>
-              <span>{formatEur(line.unitPriceCents * line.quantity)}</span>
+              <span>
+                {formatEur(
+                  // Pack totals (e.g. AirTag ×2 = €11.99) come from server quote when available
+                  quote?.lines?.find(
+                    (q) =>
+                      q.productId === line.productId &&
+                      (q.licenceOptionId || null) === (line.licenceOptionId || null),
+                  )?.lineTotalCents ?? line.unitPriceCents * line.quantity,
+                )}
+              </span>
             </li>
           ))}
         </ul>

@@ -9,7 +9,10 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { resolveVolumeUnitPrice } from "@/content/product-bundles";
+import {
+  resolveVolumeLineTotal,
+  resolveVolumeUnitPrice,
+} from "@/content/product-bundles";
 
 export type CartLine = {
   productId: string;
@@ -151,24 +154,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
           return current.map((line) => {
             if (lineKey(line.productId, line.licenceOptionId) !== key) return line;
             const nextQty = Math.min(99, line.quantity + quantity);
+            const unit = line.licenceOptionId
+              ? line.unitPriceCents
+              : resolveVolumeUnitPrice(line.slug, nextQty, item.unitPriceCents);
             return {
               ...line,
               quantity: nextQty,
-              unitPriceCents: line.licenceOptionId
-                ? line.unitPriceCents
-                : resolveVolumeUnitPrice(line.slug, nextQty, item.unitPriceCents),
+              unitPriceCents: unit,
             };
           });
         }
         const nextQty = Math.min(99, quantity);
+        const unit = item.licenceOptionId
+          ? item.unitPriceCents
+          : resolveVolumeUnitPrice(item.slug, nextQty, item.unitPriceCents);
         return [
           ...current,
           {
             ...item,
             quantity: nextQty,
-            unitPriceCents: item.licenceOptionId
-              ? item.unitPriceCents
-              : resolveVolumeUnitPrice(item.slug, nextQty, item.unitPriceCents),
+            unitPriceCents: unit,
           },
         ];
       });
@@ -195,12 +200,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
             return line;
           }
           const nextQty = Math.min(99, quantity);
+          const unit = line.licenceOptionId
+            ? line.unitPriceCents
+            : resolveVolumeUnitPrice(line.slug, nextQty, line.unitPriceCents);
           return {
             ...line,
             quantity: nextQty,
-            unitPriceCents: line.licenceOptionId
-              ? line.unitPriceCents
-              : resolveVolumeUnitPrice(line.slug, nextQty, line.unitPriceCents),
+            unitPriceCents: unit,
           };
         });
       });
@@ -229,10 +235,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const itemCount = lines.reduce((sum, line) => sum + line.quantity, 0);
-    const subtotalCents = lines.reduce(
-      (sum, line) => sum + line.unitPriceCents * line.quantity,
-      0,
-    );
+    const subtotalCents = lines.reduce((sum, line) => {
+      if (line.licenceOptionId) {
+        return sum + line.unitPriceCents * line.quantity;
+      }
+      return (
+        sum +
+        resolveVolumeLineTotal(line.slug, line.quantity, line.unitPriceCents)
+      );
+    }, 0);
     return {
       lines,
       ready,

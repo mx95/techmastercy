@@ -87,7 +87,7 @@ describe("validateCheckoutLines", () => {
     expect(lines[0]?.unitPriceCents).toBe(499);
   });
 
-  it("applies mini airtag volume pack unit prices", async () => {
+  it("applies mini airtag volume pack totals matching Revolut links", async () => {
     const product = await prisma.product.create({
       data: {
         slug: "mini-airtag-finder",
@@ -96,7 +96,7 @@ describe("validateCheckoutLines", () => {
         description: "Tracker",
         status: "PUBLISHED",
         type: "PHYSICAL",
-        priceCents: 799,
+        priceCents: 699,
         stock: 25,
       },
     });
@@ -104,19 +104,19 @@ describe("validateCheckoutLines", () => {
     const one = await validateCheckoutLines([
       { productId: product.id, quantity: 1 },
     ]);
-    expect(one[0]?.unitPriceCents).toBe(799);
-    expect(one[0]?.lineTotalCents).toBe(799);
+    expect(one[0]?.unitPriceCents).toBe(699);
+    expect(one[0]?.lineTotalCents).toBe(699);
 
     const two = await validateCheckoutLines([
       { productId: product.id, quantity: 2 },
     ]);
-    expect(two[0]?.unitPriceCents).toBe(599);
-    expect(two[0]?.lineTotalCents).toBe(1198);
+    expect(two[0]?.unitPriceCents).toBe(600);
+    expect(two[0]?.lineTotalCents).toBe(1199);
 
     const four = await validateCheckoutLines([
       { productId: product.id, quantity: 4 },
     ]);
-    expect(four[0]?.unitPriceCents).toBe(499);
-    expect(four[0]?.lineTotalCents).toBe(1996);
+    expect(four[0]?.unitPriceCents).toBe(500);
+    expect(four[0]?.lineTotalCents).toBe(1999);
   });
 });

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/components/cart/CartProvider";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
+import { resolveVolumeLineTotal } from "@/content/product-bundles";
 import { formatEur } from "@/lib/money";
 
 export default function CartPage() {
@@ -74,7 +75,15 @@ export default function CartPage() {
                   </div>
                 </div>
                 <p className="font-semibold">
-                  {formatEur(line.unitPriceCents * line.quantity)}
+                  {formatEur(
+                    line.licenceOptionId
+                      ? line.unitPriceCents * line.quantity
+                      : resolveVolumeLineTotal(
+                          line.slug,
+                          line.quantity,
+                          line.unitPriceCents,
+                        ),
+                  )}
                 </p>
               </li>
             ))}

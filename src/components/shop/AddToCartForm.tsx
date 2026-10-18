@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart/CartProvider";
 import { Button } from "@/components/site/Button";
 import {
+  packDisplayTotal,
   resolveVolumeUnitPrice,
   type ProductBundleConfig,
 } from "@/content/product-bundles";
@@ -140,7 +141,7 @@ export function AddToCartForm({
           <div className="grid gap-2">
             {availablePacks.map((pack) => {
               const selected = activePackQty === pack.quantity;
-              const packTotal = pack.unitPriceCents * pack.quantity;
+              const packTotal = packDisplayTotal(pack);
               return (
                 <label
                   key={pack.quantity}

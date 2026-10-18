@@ -1,7 +1,7 @@
 /**
  * Static Revolut Pro payment-link offers.
  * Each offer matches an exact cart composition (product slug + quantity).
- * Put the real Revolut link URLs in the matching env vars (see .env.example).
+ * URLs can be overridden with env vars (see .env.example).
  *
  * Carts that do not match any offer use the deferred flow:
  * order is stored and a payment link is sent later by email/phone.
@@ -19,56 +19,49 @@ export type RevolutPaymentOffer = {
   label: string;
   /** Exact line items required (order-insensitive) */
   items: RevolutOfferItem[];
-  /** Env var holding the Revolut Pro payment-link URL */
+  /** Expected checkout total in euro cents (documentation / sanity) */
+  amountCents: number;
+  /** Default Revolut Checkout payment URL */
+  url: string;
+  /** Optional env override for the URL */
   urlEnv: string;
 };
 
 /**
- * Predefined single-product and combo offers for the live catalogue.
- * Add more rows here when you create matching Revolut Pro links.
+ * Single-product offers only (no combos for now).
  */
 export const revolutPaymentOffers: RevolutPaymentOffer[] = [
   {
     id: "ottocast-1",
     label: "Ottocast Cabin Care × 1",
     items: [{ slug: "ottocast-cabin-care", quantity: 1 }],
+    amountCents: 8999,
+    url: "https://checkout.revolut.com/pay/04870c4a-c82d-4481-8149-3648d3ae010b",
     urlEnv: "REVOLUT_LINK_OTTOCAST_1",
   },
   {
     id: "airtag-1",
     label: "Mini AirTag Finder × 1",
     items: [{ slug: "mini-airtag-finder", quantity: 1 }],
+    amountCents: 699,
+    url: "https://checkout.revolut.com/pay/aeac00a0-3129-4c23-bce9-1dab922d5db7",
     urlEnv: "REVOLUT_LINK_AIRTAG_1",
   },
   {
     id: "airtag-2",
     label: "Mini AirTag Finder × 2",
     items: [{ slug: "mini-airtag-finder", quantity: 2 }],
+    amountCents: 1199,
+    url: "https://checkout.revolut.com/pay/2e5a45fa-4702-4761-af84-f42103f3a605",
     urlEnv: "REVOLUT_LINK_AIRTAG_2",
   },
   {
     id: "airtag-4",
     label: "Mini AirTag Finder × 4",
     items: [{ slug: "mini-airtag-finder", quantity: 4 }],
+    amountCents: 1999,
+    url: "https://checkout.revolut.com/pay/3bc744af-5be1-48d8-bb90-7c85c3e9dea5",
     urlEnv: "REVOLUT_LINK_AIRTAG_4",
-  },
-  {
-    id: "ottocast-airtag-1",
-    label: "Ottocast Cabin Care × 1 + Mini AirTag Finder × 1",
-    items: [
-      { slug: "ottocast-cabin-care", quantity: 1 },
-      { slug: "mini-airtag-finder", quantity: 1 },
-    ],
-    urlEnv: "REVOLUT_LINK_OTTOCAST_AIRTAG_1",
-  },
-  {
-    id: "ottocast-airtag-2",
-    label: "Ottocast Cabin Care × 1 + Mini AirTag Finder × 2",
-    items: [
-      { slug: "ottocast-cabin-care", quantity: 1 },
-      { slug: "mini-airtag-finder", quantity: 2 },
-    ],
-    urlEnv: "REVOLUT_LINK_OTTOCAST_AIRTAG_2",
   },
 ];
 
@@ -101,7 +94,7 @@ export function findRevolutOffer(
 }
 
 export function getRevolutOfferUrl(offer: RevolutPaymentOffer): string | null {
-  const raw = process.env[offer.urlEnv]?.trim();
+  const raw = (process.env[offer.urlEnv]?.trim() || offer.url).trim();
   if (!raw) return null;
   try {
     const url = new URL(raw);

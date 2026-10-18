@@ -66,7 +66,8 @@ See `.env.example`. Minimum for local:
 - `SESSION_SECRET` — long random string
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — seed bootstrap only
 - `APP_URL` / `SITE_URL`
-- `PAYMENT_PROVIDER=mock` and (dev) `ALLOW_MOCK_PAYMENTS=true`
+- `PAYMENT_PROVIDER=mock` (dev) or `revolut_link` / `jcc`
+- For Revolut Pro links: set `REVOLUT_LINK_*` URLs (see `.env.example` and `src/content/revolut-payment-offers.ts`)
 
 Optional: `SMTP_*`, `BUSINESS_EMAIL`, `JCC_*`, `MOCK_WEBHOOK_SECRET`, tax and download tuning vars.
 

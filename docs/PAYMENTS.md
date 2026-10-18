@@ -16,13 +16,18 @@ Factory: `getPaymentProvider()` in `src/lib/payments/index.ts`.
 
 Used when Revolut Business / Merchant API is unavailable (e.g. freelancer → Pro only).
 
-1. Create Payment Links in the Revolut Pro app for each offer in `src/content/revolut-payment-offers.ts`.
-2. Set `PAYMENT_PROVIDER=revolut_link` and the matching `REVOLUT_LINK_*` URLs in `.env`.
+1. Payment link URLs for the four single-product offers are already in `src/content/revolut-payment-offers.ts` (optional `REVOLUT_LINK_*` env overrides).
+2. Set `PAYMENT_PROVIDER=revolut_link` in `.env`.
 3. **Matched cart** → checkout redirects to that Revolut link.
-4. **Unmatched cart** → order is stored; customer is told a link will be sent by email/phone (phone required).
+4. **Unmatched cart** (including combos) → order is stored; customer is told a link will be sent by email/phone (phone required).
 5. After payment appears in Revolut, use **Admin → Orders → Mark paid** (Pro links have no webhooks).
 
-Current static offers: Ottocast ×1; AirTag ×1/×2/×4; Ottocast+AirTag ×1; Ottocast+AirTag×2.
+Current static offers (no combos):
+
+| Offer | Amount | Link baked into offers file |
+|---|---|---|
+| Ottocast ×1 | €89.99 | yes |
+| AirTag ×1 / ×2 / ×4 | €6.99 / €11.99 / €19.99 | yes |
 
 ## Mock payments
 

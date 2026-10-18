@@ -30,7 +30,14 @@ export function calculateTaxPortion(
 }
 
 export function sumLineTotals(
-  lines: Array<{ unitPriceCents: number; quantity: number }>,
+  lines: Array<{
+    unitPriceCents: number;
+    quantity: number;
+    lineTotalCents?: number;
+  }>,
 ): number {
-  return lines.reduce((sum, line) => sum + line.unitPriceCents * line.quantity, 0);
+  return lines.reduce((sum, line) => {
+    if (typeof line.lineTotalCents === "number") return sum + line.lineTotalCents;
+    return sum + line.unitPriceCents * line.quantity;
+  }, 0);
 }

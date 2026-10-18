@@ -1,4 +1,7 @@
-import { resolveVolumeUnitPrice } from "@/content/product-bundles";
+import {
+  resolveVolumeLineTotal,
+  resolveVolumeUnitPrice,
+} from "@/content/product-bundles";
 import { prisma } from "@/lib/db";
 import { calculateTaxPortion, sumLineTotals } from "@/lib/money";
 import { getTaxConfig } from "@/lib/config";
@@ -43,6 +46,11 @@ export async function validateCheckoutLines(
       line.quantity,
       product.priceCents,
     );
+    let lineTotalCents = resolveVolumeLineTotal(
+      product.slug,
+      line.quantity,
+      product.priceCents,
+    );
     let licenceOptionId: string | null = null;
     let licenceName: string | null = null;
 
@@ -54,6 +62,7 @@ export async function validateCheckoutLines(
         throw new CheckoutValidationError("Invalid licence option selected.");
       }
       unitPriceCents = licence.priceCents;
+      lineTotalCents = licence.priceCents * line.quantity;
       licenceOptionId = licence.id;
       licenceName = licence.name;
     } else if (product.type === "DIGITAL" && product.licences.some((l) => l.active)) {
@@ -69,7 +78,7 @@ export async function validateCheckoutLines(
       licenceName,
       unitPriceCents,
       quantity: line.quantity,
-      lineTotalCents: unitPriceCents * line.quantity,
+      lineTotalCents,
     });
   }
 
