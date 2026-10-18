@@ -1,4 +1,5 @@
 # Move techmaster.com.cy DNS from Shopify → Hetzner via Cloudflare API.
+# Retrigger: 2026-10-18 domain cutover requested.
 # Requires production environment secrets:
 #   CLOUDFLARE_API_TOKEN  (Zone.DNS Edit + Zone.Zone Read)
 #   CLOUDFLARE_ZONE_ID    (optional; auto-detected from domain if omitted)
