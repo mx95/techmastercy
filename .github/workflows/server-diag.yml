@@ -1,103 +1,34 @@
-# Recover full disk via docker.sock, then deploy + enable HTTPS.
+# SSH connectivity check. HTTPS enablement is manual after disk is healthy:
+#   sudo /usr/local/sbin/techmastercy-ctl prune
+#   sudo /usr/local/sbin/techmastercy-ctl deploy <sha>
+#   sudo /usr/local/sbin/techmastercy-ctl enable-https
 name: Server access check
 
 on:
-  push:
-    branches:
-      - cursor/server-access-diag-aabd
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  enable-https:
-    name: Certbot + nginx HTTPS
+  ssh-check:
+    name: SSH as tmcdeploy
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 10
     environment: production
     steps:
-      - name: Confirm public DNS points at Hetzner
-        run: |
-          set -euo pipefail
-          want="46.225.180.168"
-          apex="$(dig +short techmaster.com.cy A | head -n1 || true)"
-          www="$(dig +short www.techmaster.com.cy A | head -n1 || true)"
-          echo "apex=$apex www=$www"
-          test "$apex" = "$want" && test "$www" = "$want"
-
-      - name: Prune docker via socket, deploy, enable HTTPS
+      - name: Probe server over SSH
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          command_timeout: 40m
+          command_timeout: 5m
           script: |
             set -euo pipefail
-            echo "===== disk before ====="
+            whoami
+            hostname
             df -h /
-            ls -la /var/run/docker.sock
-            id
-
-            echo "===== docker.sock prune (no docker group needed if sock is world-accessible) ====="
-            curl -fsS --unix-socket /var/run/docker.sock -X POST http://localhost/containers/prune || true
-            curl -fsS --unix-socket /var/run/docker.sock -X POST 'http://localhost/images/prune?dangling=false' || true
-            curl -fsS --unix-socket /var/run/docker.sock -X POST 'http://localhost/build/prune?all=true&keep-storage=0' || true
-            curl -fsS --unix-socket /var/run/docker.sock -X POST http://localhost/networks/prune || true
-            # Also try CLI in case user is in docker group unexpectedly
-            docker system prune -af || true
-            df -h /
-
-            APP=/opt/techmastercy
-            # Ignore root-owned leftovers when cleaning the app tree.
-            if [ -d "$APP" ]; then
-              find "$APP" -mindepth 1 -maxdepth 1 ! -name '.env' ! -name '.deploy' -exec rm -rf {} + 2>/dev/null || true
-            fi
-            mkdir -p "$APP/deploy" "$APP/.deploy"
-            test -f "$APP/.env"
-
-            # Pull fresh ctl/compose from GitHub now that disk should have space.
-            curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/deploy/techmastercy-ctl.sh" \
-              -o "$APP/deploy/techmastercy-ctl.sh"
-            chmod 755 "$APP/deploy/techmastercy-ctl.sh"
-            curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/docker-compose.yml" \
-              -o "$APP/docker-compose.yml"
-            curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/deploy/nginx-https.conf" \
-              -o "$APP/deploy/nginx-https.conf"
-
-            # Install ctl via self-refresh using git no-op aliases.
-            rm -rf "$APP/.git"
-            git -C "$APP" init
-            git -C "$APP" config user.email "tmcdeploy@local"
-            git -C "$APP" config user.name "tmcdeploy"
-            git -C "$APP" config alias.fetch '!true'
-            git -C "$APP" config alias.checkout '!true'
-            git -C "$APP" config alias.reset '!true'
-            git -C "$APP" commit --allow-empty -m bootstrap
-            SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-            sudo /usr/local/sbin/techmastercy-ctl deploy "$SHA" || true
-            sudo /usr/local/sbin/techmastercy-ctl prune || true
-            df -h /
-
-            git -C "$APP" config --unset-all alias.fetch || true
-            git -C "$APP" config --unset-all alias.checkout || true
-            git -C "$APP" config --unset-all alias.reset || true
-            git -C "$APP" remote remove origin 2>/dev/null || true
-            git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git
-            git -C "$APP" fetch --prune origin
-            BRANCH="cursor/server-access-diag-aabd"
-            SHA="$(git -C "$APP" rev-parse "origin/$BRANCH")"
-            echo "Target SHA $SHA"
-            sudo /usr/local/sbin/techmastercy-ctl deploy "$SHA"
-            sudo /usr/local/sbin/techmastercy-ctl enable-https techmaster.com.cy 46.225.180.168
-            sudo /usr/local/sbin/techmastercy-ctl health
-
-      - name: Probe HTTPS
-        run: |
-          set -euo pipefail
-          sleep 5
-          curl -fsS --connect-timeout 10 --max-time 20 "https://techmaster.com.cy/api/health"
-          curl -fsS --connect-timeout 10 --max-time 20 "https://www.techmaster.com.cy/api/health"
-          echo "HTTPS OK"
+            sudo /usr/local/sbin/techmastercy-ctl help || true
+            sudo /usr/local/sbin/techmastercy-ctl status || true
