@@ -85,6 +85,16 @@ cmd_health() {
   echo
 }
 
+cmd_prune() {
+  require_root
+  log "pruning docker build cache, unused images, and stopped containers"
+  docker builder prune -af || true
+  docker system prune -af --volumes=false || true
+  # Keep the data volume; only drop dangling/unused images.
+  df -h / /var/lib/docker 2>/dev/null || df -h /
+  log "prune complete"
+}
+
 checkout_sha() {
   local sha="$1"
   [[ "${sha}" =~ ^[0-9a-f]{7,40}$ ]] || die "invalid git sha: ${sha}"
@@ -125,6 +135,10 @@ cmd_deploy() {
     install -m 0750 -o root -g root "${APP_DIR}/deploy/techmastercy-ctl.sh" /usr/local/sbin/techmastercy-ctl
     log "refreshed /usr/local/sbin/techmastercy-ctl from deploy tree"
   fi
+
+  # Reclaim disk before image builds (small VPS fill up after a few deploys).
+  docker builder prune -af >/dev/null 2>&1 || true
+  docker image prune -af >/dev/null 2>&1 || true
 
   if ! compose_up "${target_sha}"; then
     log "deploy failed; attempting rollback to ${previous:-none}"
@@ -244,6 +258,7 @@ Commands:
   status                        Show deploy state, compose ps, health
   health                        Curl the local health endpoint
   logs [lines]                  Tail application logs (default 200)
+  prune                         Free disk via docker builder/system prune
   dns-check [domain] [ip]       Verify public DNS points at this server
   enable-https [domain] [ip]    Certbot + nginx HTTPS after DNS cut-over
 EOF
@@ -258,6 +273,7 @@ main() {
     status) cmd_status "$@" ;;
     health) cmd_health "$@" ;;
     logs) cmd_logs "$@" ;;
+    prune) cmd_prune "$@" ;;
     dns-check) cmd_dns_check "$@" ;;
     enable-https) cmd_enable_https "$@" ;;
     -h|--help|help|"") usage ;;

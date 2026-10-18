@@ -45,7 +45,9 @@ jobs:
             else
               SHA="$(git -C /opt/techmastercy rev-parse origin/main)"
             fi
-            echo "Deploying ${SHA} (refreshes ctl with enable-https)"
+            echo "Target SHA ${SHA}"
+            sudo /usr/local/sbin/techmastercy-ctl deploy "${SHA}" || true
+            sudo /usr/local/sbin/techmastercy-ctl prune || true
             sudo /usr/local/sbin/techmastercy-ctl deploy "${SHA}"
             sudo /usr/local/sbin/techmastercy-ctl enable-https techmaster.com.cy 46.225.180.168
             sudo /usr/local/sbin/techmastercy-ctl health

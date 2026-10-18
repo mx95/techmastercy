@@ -32,10 +32,10 @@ FROM node:22.14.0-bookworm-slim AS runner
 WORKDIR /app
 
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends openssl ca-certificates util-linux \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/* \
   && groupadd --system --gid 1001 nodejs \
-  && useradd --system --uid 1001 --gid nodejs --shell /bin/sh nextjs
+  && useradd --system --uid 1001 --gid nodejs nextjs
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
