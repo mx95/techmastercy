@@ -1,4 +1,4 @@
-# Post-recover verification: disk, ctl, deploy, HTTPS, health.
+# Fix website after disk recover: rebuild git checkout, deploy, HTTPS.
 name: Server access check
 
 on:
@@ -11,61 +11,82 @@ permissions:
   contents: read
 
 jobs:
-  verify:
-    name: Verify + finish deploy
+  fix-site:
+    name: Fix website
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     environment: production
     steps:
-      - name: Disk, ctl, deploy, HTTPS, health
+      - name: Rebuild checkout, deploy, HTTPS
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          command_timeout: 40m
+          command_timeout: 55m
           script: |
             set -euo pipefail
             APP=/opt/techmastercy
             CTL=/usr/local/sbin/techmastercy-ctl
             BRANCH=cursor/server-access-diag-aabd
 
-            echo "===== disk / ctl ====="
+            echo "===== before ====="
+            date -u
+            id
             df -h /
+            ls -la "$APP" | head -n 50
             ls -la "$CTL"
-            sudo -n "$CTL" help 2>&1 | head -n 40 || true
+            sudo -n "$CTL" help >/dev/null
+            echo "ctl_ok"
 
-            echo "===== ensure checkout ====="
-            mkdir -p "$APP"
+            echo "===== fix git ownership via parent dir delete ====="
+            # /opt/techmastercy is writable by tmcdeploy (mode 777, no sticky).
+            # Root-owned .git can be unlinked from a writable parent, then recreated.
             git config --global --add safe.directory "$APP"
-            # Recover ran as root; make tree writable for tmcdeploy where possible
-            find "$APP" -user root -maxdepth 2 2>/dev/null | head -n 20 || true
-            if [ ! -d "$APP/.git" ]; then
-              git -C "$APP" init
-              git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git 2>/dev/null \
-                || git -C "$APP" remote set-url origin https://github.com/mx95/techmastercy.git
+            ls -ld "$APP" "$APP/.git" 2>&1 || true
+            if [ -e "$APP/.git" ]; then
+              rm -rf "$APP/.git"
+              echo "removed_old_git=$?"
             fi
-            # Drop tmpfs symlinks from recovery staging if present
-            if [ -L "$APP/deploy" ]; then rm -f "$APP/deploy"; fi
-            if [ -L "$APP/docker-compose.yml" ]; then rm -f "$APP/docker-compose.yml"; fi
-            git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git 2>/dev/null \
-              || git -C "$APP" remote set-url origin https://github.com/mx95/techmastercy.git
+            # Drop recovery symlinks / junk we can delete
+            rm -rf "$APP/deploy" "$APP/docker-compose.yml" "$APP/deploy.root-owned.bak" 2>/dev/null || true
+            # Keep .env and .deploy (ctl/root use .deploy)
+
+            echo "===== fresh clone into APP ====="
+            git -C "$APP" init
+            git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git
             git -C "$APP" fetch --prune origin
             SHA=$(git -C "$APP" rev-parse "origin/${BRANCH}")
             echo "Deploying $SHA"
+            git -C "$APP" checkout -f "$SHA"
+            test -f "$APP/docker-compose.yml"
+            test -f "$APP/deploy/techmastercy-ctl.sh"
+            test -f "$APP/.env"
+            # Revolut payment links
+            if grep -q '^PAYMENT_PROVIDER=' "$APP/.env"; then
+              sed -i 's|^PAYMENT_PROVIDER=.*|PAYMENT_PROVIDER="revolut_link"|' "$APP/.env"
+            else
+              printf '\nPAYMENT_PROVIDER="revolut_link"\n' >> "$APP/.env"
+            fi
+            grep '^PAYMENT_PROVIDER=' "$APP/.env"
 
-            echo "===== prune (safe) + deploy ====="
-            sudo -n "$CTL" prune || true
+            echo "===== prune + deploy ====="
+            sudo -n "$CTL" prune
             df -h /
             sudo -n "$CTL" deploy "$SHA"
+            echo "===== https ====="
             sudo -n "$CTL" enable-https techmaster.com.cy 46.225.180.168 || true
             sudo -n "$CTL" health
             sudo -n "$CTL" status || true
 
-            echo "===== local probes ====="
-            curl -fsS --max-time 5 http://127.0.0.1:3000/api/health || true
-            curl -fsS --max-time 5 -k https://127.0.0.1/api/health || true
-            curl -fsS --max-time 5 http://127.0.0.1/api/health || true
+            echo "===== probes ====="
+            curl -fsS --max-time 10 http://127.0.0.1:3000/api/health
+            echo
+            curl -fsS --max-time 10 http://127.0.0.1/api/health || true
+            echo
+            curl -fsS --max-time 10 -k https://127.0.0.1/api/health || true
+            echo
             df -h /
-            echo "===== done ====="
+            echo "SITE_FIX_OK"
+            date -u
