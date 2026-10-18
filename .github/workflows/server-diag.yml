@@ -34,8 +34,7 @@ jobs:
             echo "===== disk / ctl ====="
             df -h /
             ls -la "$CTL"
-            sudo -n wc -c "$CTL"
-            sudo -n "$CTL" help | head -n 40
+            sudo -n "$CTL" help 2>&1 | head -n 40 || true
 
             echo "===== ensure checkout ====="
             mkdir -p "$APP"
