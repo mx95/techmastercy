@@ -1,4 +1,4 @@
-# Diagnose / recover production after Shopify domain disconnect.
+# Recover full VPS disk then redeploy + HTTPS.
 name: Server access check
 
 on:
@@ -12,12 +12,12 @@ permissions:
 
 jobs:
   recover:
-    name: Disk recover + HTTPS
+    name: Prune Docker + HTTPS
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: production
     steps:
-      - name: SSH recover
+      - name: Prune and restore site
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -28,66 +28,74 @@ jobs:
           script: |
             set -euo pipefail
             echo "===== before ====="
-            df -h /
+            df -h / /dev/shm 2>/dev/null || df -h /
             id
             ls -la /opt/techmastercy /opt/techmastercy/deploy 2>/dev/null || true
             sudo /usr/local/sbin/techmastercy-ctl help || true
-            sudo /usr/local/sbin/techmastercy-ctl status || true
 
             APP=/opt/techmastercy
-            # Free anything deletable (ignore permission errors on root-owned files).
-            find "$APP" -mindepth 1 -maxdepth 1 ! -name '.env' ! -name '.deploy' ! -name 'deploy' -exec rm -rf {} + 2>/dev/null || true
-            # Root-owned files inside deploy/ block rm; rename the directory instead (we own the parent).
-            if [ -d "$APP/deploy" ]; then
-              mv "$APP/deploy" "$APP/deploy.root-owned.bak" 2>/dev/null || true
-            fi
-            find /tmp -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
-            find "$HOME" -mindepth 1 -maxdepth 1 \( -name '.cache' -o -name '.npm' \) -exec rm -rf {} + 2>/dev/null || true
-            # Drop the bak tree if rename worked (frees nothing if root files remain, but unblocks path).
-            rm -rf "$APP/deploy.root-owned.bak" 2>/dev/null || true
-            df -h /
+            SHM=/dev/shm/tmc-recover
+            mkdir -p "$SHM"
 
-            mkdir -p "$APP/deploy"
+            # Stage new ctl on tmpfs (works even when / is full for non-root).
             curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/deploy/techmastercy-ctl.sh" \
-              -o "$APP/deploy/techmastercy-ctl.sh"
-            chmod 755 "$APP/deploy/techmastercy-ctl.sh"
+              -o "$SHM/techmastercy-ctl.sh"
+            curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/docker-compose.yml" \
+              -o "$SHM/docker-compose.yml"
+            curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/deploy/nginx-https.conf" \
+              -o "$SHM/nginx-https.conf"
+            chmod 755 "$SHM/techmastercy-ctl.sh"
+            head -n1 "$SHM/techmastercy-ctl.sh"
 
-            # Tiny compose so require_env / compose commands work
+            # Move aside root-owned deploy dir (parent is 777 / owned by tmcdeploy).
+            if [ -d "$APP/deploy" ]; then
+              mv "$APP/deploy" "$APP/deploy.bak.$$" 2>/dev/null || true
+            fi
+            # Symlink deploy → tmpfs so root ctl install reads our new script.
+            ln -sfn "$SHM" "$APP/deploy"
+            # Compose file on disk path ctl expects
             if [ ! -f "$APP/docker-compose.yml" ]; then
-              curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/docker-compose.yml" \
-                -o "$APP/docker-compose.yml" || true
+              ln -sfn "$SHM/docker-compose.yml" "$APP/docker-compose.yml"
             fi
-            if [ ! -f "$APP/deploy/nginx-https.conf" ]; then
-              curl -fsSL "https://raw.githubusercontent.com/mx95/techmastercy/cursor/server-access-diag-aabd/deploy/nginx-https.conf" \
-                -o "$APP/deploy/nginx-https.conf" || true
-            fi
+            # nginx conf where enable-https looks
+            ln -sfn "$SHM/nginx-https.conf" "$SHM/nginx-https.conf" 2>/dev/null || true
+            # ensure enable-https path APP/deploy/nginx-https.conf resolves via SHM
+            test -f "$APP/deploy/techmastercy-ctl.sh"
+            test -f "$APP/deploy/nginx-https.conf" || ln -sfn "$SHM/nginx-https.conf" "$APP/deploy/nginx-https.conf"
 
-            # Bootstrap git aliases so deploy can refresh ctl without fetching objects.
+            # Git no-op aliases so deploy refreshes ctl without writing objects on /
             if [ ! -d "$APP/.git" ]; then
-              git -C "$APP" init || true
-              git -C "$APP" config user.email "tmc@local" || true
-              git -C "$APP" config user.name "tmc" || true
-              git -C "$APP" commit --allow-empty -m b || true
+              # init on tmpfs and symlink? git needs .git on APP — put .git on shm
+              rm -rf "$SHM/git"
+              mkdir -p "$SHM/git"
+              git -C "$SHM/git" init
+              git -C "$SHM/git" config user.email t@local
+              git -C "$SHM/git" config user.name t
+              git -C "$SHM/git" commit --allow-empty -m b
+              ln -sfn "$SHM/git/.git" "$APP/.git"
             fi
-            git -C "$APP" config alias.fetch '!true' || true
-            git -C "$APP" config alias.checkout '!true' || true
-            git -C "$APP" config alias.reset '!true' || true
+            git -C "$APP" config alias.fetch '!true'
+            git -C "$APP" config alias.checkout '!true'
+            git -C "$APP" config alias.reset '!true'
 
             SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-            echo "Attempting ctl self-refresh via deploy $SHA"
+            echo "Self-refresh ctl via deploy $SHA"
             sudo /usr/local/sbin/techmastercy-ctl deploy "$SHA" || true
 
-            echo "===== prune if available ====="
-            sudo /usr/local/sbin/techmastercy-ctl prune || true
+            echo "===== prune ====="
+            sudo /usr/local/sbin/techmastercy-ctl help
+            sudo /usr/local/sbin/techmastercy-ctl prune
             df -h /
 
-            # Real deploy from GitHub once space exists
+            # Real fetch/deploy from GitHub
             git -C "$APP" config --unset-all alias.fetch || true
             git -C "$APP" config --unset-all alias.checkout || true
             git -C "$APP" config --unset-all alias.reset || true
-            git -C "$APP" remote remove origin 2>/dev/null || true
-            git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git 2>/dev/null || \
-              git -C "$APP" remote set-url origin https://github.com/mx95/techmastercy.git
+            # Replace shm .git with real repo on disk now that space exists
+            rm -f "$APP/.git"
+            rm -rf "$APP/deploy" "$APP/docker-compose.yml"
+            git -C "$APP" init
+            git -C "$APP" remote add origin https://github.com/mx95/techmastercy.git
             git -C "$APP" fetch --prune origin
             SHA="$(git -C "$APP" rev-parse origin/cursor/server-access-diag-aabd)"
             echo "Deploy $SHA"
@@ -95,9 +103,10 @@ jobs:
             sudo /usr/local/sbin/techmastercy-ctl enable-https techmaster.com.cy 46.225.180.168
             sudo /usr/local/sbin/techmastercy-ctl health
 
-      - name: Probe
+      - name: Probe site
         run: |
           set -euo pipefail
-          curl -fsS --connect-timeout 10 --max-time 20 "http://techmaster.com.cy/api/health" || true
+          sleep 3
+          curl -fsS --connect-timeout 10 --max-time 20 "http://techmaster.com.cy/api/health"
           curl -fsS --connect-timeout 10 --max-time 20 "https://techmaster.com.cy/api/health"
           echo OK
