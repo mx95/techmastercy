@@ -120,7 +120,7 @@ export default async function HomePage() {
           <SectionHeading
             eyebrow="Shop"
             title="Hardware and kits"
-            description="Buy published catalogue items with server-validated checkout. Pack prices apply where shown."
+            description="Local kits use server-validated checkout. The PetPal GPS tracker opens petpal.com.cy to buy."
           />
           {products.length === 0 ? (
             <p className="mt-8 text-foreground-muted">No products published yet.</p>

@@ -1,3 +1,4 @@
+import { listExternalShopProducts } from "@/content/external-shop";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 
@@ -15,6 +16,9 @@ export type ProductCardData = {
   previewNote: string | null;
   features: string[];
   stock: number | null;
+  /** When set, shop cards link out (partner checkout) instead of local PDP. */
+  externalUrl?: string | null;
+  externalCta?: string | null;
 };
 
 function parseJsonArray(value: string): string[] {
@@ -82,7 +86,24 @@ export async function listPublishedProducts(options?: {
     orderBy,
   });
 
-  return products.map(mapProductCard);
+  const local = products.map(mapProductCard);
+  const external = listExternalShopProducts({
+    q: options?.q,
+    category: options?.category,
+    type: options?.type,
+  });
+
+  const merged = [...local, ...external];
+  if (options?.sort === "price-asc") {
+    merged.sort((a, b) => a.priceCents - b.priceCents);
+  } else if (options?.sort === "price-desc") {
+    merged.sort((a, b) => b.priceCents - a.priceCents);
+  } else if (options?.sort === "newest") {
+    // External partner listings stay after local catalogue items.
+    return [...local, ...external];
+  }
+
+  return merged;
 }
 
 export async function getPublishedProduct(slug: string) {

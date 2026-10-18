@@ -5,13 +5,14 @@ import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { Container } from "@/components/site/Container";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import { JsonLd } from "@/components/site/JsonLd";
+import { listExternalShopProducts } from "@/content/external-shop";
 import { listCategories, listPublishedProducts } from "@/lib/products";
 import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
   title: "Shop",
   description:
-    "Buy car tech, smart finders and upcoming developer tools from TechmasterCY. EUR pricing with server-validated checkout.",
+    "Buy car tech, smart finders and upcoming developer tools from TechmasterCY. PetPal GPS trackers link out to petpal.com.cy.",
   path: "/shop",
 });
 
@@ -48,6 +49,15 @@ export default async function ShopPage({
     listCategories(),
   ]);
 
+  const externalByCategory = listExternalShopProducts().reduce<Record<string, number>>(
+    (acc, product) => {
+      if (!product.categorySlug) return acc;
+      acc[product.categorySlug] = (acc[product.categorySlug] ?? 0) + 1;
+      return acc;
+    },
+    {},
+  );
+
   return (
     <Container className="min-w-0 py-8 sm:py-12 lg:py-16">
       <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Shop", path: "/shop" }]} />
@@ -55,7 +65,7 @@ export default async function ShopPage({
         className="mt-6"
         eyebrow="Shop"
         title="Technology products with clear checkout"
-        description="Browse published catalogue items. Prices are re-validated on the server before payment. Digital kits appear here only after files are ready."
+        description="Browse published catalogue items. Local checkout is server-validated. PetPal GPS trackers open petpal.com.cy for purchase."
       />
       <div className="mt-8">
         <Suspense fallback={<div className="surface h-28 animate-pulse rounded-lg" />}>
@@ -63,7 +73,7 @@ export default async function ShopPage({
             categories={categories.map((c) => ({
               slug: c.slug,
               name: c.name,
-              count: c._count.products,
+              count: c._count.products + (externalByCategory[c.slug] ?? 0),
             }))}
           />
         </Suspense>

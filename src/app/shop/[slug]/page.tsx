@@ -1,10 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { AddToCartForm } from "@/components/shop/AddToCartForm";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ProductGallery } from "@/components/shop/ProductGallery";
 import { Breadcrumbs } from "@/components/site/Breadcrumbs";
 import { Container } from "@/components/site/Container";
 import { JsonLd } from "@/components/site/JsonLd";
+import { getExternalShopProduct } from "@/content/external-shop";
 import { getProductVolumeBundles } from "@/content/product-bundles";
 import { getPublishedProduct, getRelatedProducts } from "@/lib/products";
 import { formatEur } from "@/lib/money";
@@ -18,6 +19,15 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params;
+  const external = getExternalShopProduct(slug);
+  if (external) {
+    return createMetadata({
+      title: external.name,
+      description: external.shortDescription,
+      path: `/shop/${external.slug}`,
+      ogImage: external.images[0],
+    });
+  }
   const product = await getPublishedProduct(slug);
   if (!product) {
     return createMetadata({
@@ -37,6 +47,10 @@ export async function generateMetadata({ params }: { params: Params }) {
 
 export default async function ProductDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
+  const external = getExternalShopProduct(slug);
+  if (external?.externalUrl) {
+    permanentRedirect(external.externalUrl);
+  }
   const product = await getPublishedProduct(slug);
   if (!product) notFound();
 

@@ -1,6 +1,8 @@
 export const petpal = {
   name: "PetPal Care Hub",
   url: "https://petpal.com.cy",
+  /** Partner shop (GPS tracker and related pet hardware). */
+  shopUrl: "https://petpal.com.cy/shop",
   eyebrow: "Our project",
   headline: "PetPal Care Hub — built by TechmasterCY",
   description:
