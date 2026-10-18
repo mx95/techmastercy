@@ -21,8 +21,12 @@ services:
       HOSTNAME: "0.0.0.0"
     ports:
       - "127.0.0.1:3000:3000"
+    # Start as root so entrypoint can refresh a stale host ctl, then drop to nextjs.
+    user: "0:0"
     volumes:
       - techmaster_data:/data
+      - /usr/local/sbin:/host-sbin
+      - ./deploy/techmastercy-ctl.sh:/ctl-src/techmastercy-ctl.sh:ro
     healthcheck:
       test:
         [
