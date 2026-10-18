@@ -69,31 +69,26 @@ jobs:
             exit 1
           fi
 
-      - name: Refresh ctl and enable HTTPS on server
+      - name: Deploy branch tip then enable HTTPS
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          command_timeout: 15m
+          command_timeout: 25m
           script: |
             set -euo pipefail
-            sudo -u tmcdeploy git -C /opt/techmastercy fetch --prune origin
+            # tmcdeploy may only sudo /usr/local/sbin/techmastercy-ctl (nothing else).
+            git -C /opt/techmastercy fetch --prune origin
             BRANCH="cursor/server-access-diag-aabd"
-            if sudo -u tmcdeploy git -C /opt/techmastercy rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
-              REF="origin/${BRANCH}"
+            if git -C /opt/techmastercy rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
+              SHA="$(git -C /opt/techmastercy rev-parse "origin/${BRANCH}")"
             else
-              REF="origin/main"
+              SHA="$(git -C /opt/techmastercy rev-parse origin/main)"
             fi
-            sudo -u tmcdeploy git -C /opt/techmastercy show "${REF}:deploy/techmastercy-ctl.sh" \
-              > /tmp/techmastercy-ctl.sh
-            sudo install -m 0750 -o root -g root /tmp/techmastercy-ctl.sh /usr/local/sbin/techmastercy-ctl
-            rm -f /tmp/techmastercy-ctl.sh
-            sudo -u tmcdeploy git -C /opt/techmastercy show "${REF}:deploy/nginx-https.conf" \
-              > /tmp/nginx-https.conf
-            sudo install -m 0644 /tmp/nginx-https.conf /opt/techmastercy/deploy/nginx-https.conf
-            rm -f /tmp/nginx-https.conf
+            echo "Deploying ${SHA} (refreshes ctl with enable-https)"
+            sudo /usr/local/sbin/techmastercy-ctl deploy "${SHA}"
             sudo /usr/local/sbin/techmastercy-ctl enable-https techmaster.com.cy 46.225.180.168
             sudo /usr/local/sbin/techmastercy-ctl health
 
