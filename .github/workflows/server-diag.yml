@@ -16,6 +16,8 @@ jobs:
     name: SSH as tmcdeploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Same environment as deploy.yml so DEPLOY_* secrets resolve
+    environment: production
     steps:
       - name: Probe server over SSH
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
