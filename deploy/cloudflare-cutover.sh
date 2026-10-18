@@ -69,6 +69,22 @@ echo "zone_id=${ZONE_ID}"
 upsert_a_record "${ZONE_ID}" "${DOMAIN}" "${TARGET_IP}"
 upsert_a_record "${ZONE_ID}" "www.${DOMAIN}" "${TARGET_IP}"
 
+# Drop Shopify IPv6 / leftover Shopify hostnames so traffic cannot fall back.
+delete_records_by_type() {
+  local zone_id="$1" name="$2" rtype="$3"
+  local list ids
+  list="$(cf GET "/zones/${zone_id}/dns_records?name=${name}&type=${rtype}")"
+  ids="$(printf '%s' "${list}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("\n".join(r["id"] for r in (d.get("result") or [])))')"
+  while IFS= read -r rid; do
+    [[ -n "${rid}" ]] || continue
+    echo "Deleting ${rtype} ${name} (${rid})"
+    cf DELETE "/zones/${zone_id}/dns_records/${rid}" >/dev/null
+  done <<< "${ids}"
+}
+delete_records_by_type "${ZONE_ID}" "${DOMAIN}" "AAAA"
+# Optional Shopify account subdomain left from the old storefront.
+delete_records_by_type "${ZONE_ID}" "account.${DOMAIN}" "CNAME"
+
 echo "=== verifying public DNS (may lag) ==="
 for host in "${DOMAIN}" "www.${DOMAIN}"; do
   echo "-- dig ${host} --"
