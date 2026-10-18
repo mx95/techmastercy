@@ -1,5 +1,5 @@
-# Temporary: verify shared root passwords + SSH auth policy.
-# Passwords are masked in logs; remove from this file after the run.
+# SSH connectivity / policy check using production DEPLOY_* secrets.
+# Does not deploy. Does not embed root passwords.
 name: Server access check
 
 on:
@@ -13,17 +13,12 @@ permissions:
 
 jobs:
   ssh-check:
-    name: Check root credentials
+    name: SSH as tmcdeploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
     steps:
-      - name: Mask candidate passwords in logs
-        run: |
-          echo "::add-mask::uhkueqqNH4Vb"
-          echo "::add-mask::ueUaLhxnVgp3"
-
-      - name: Inspect SSH policy as tmcdeploy
+      - name: Probe server over SSH
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -33,68 +28,24 @@ jobs:
           command_timeout: 5m
           script: |
             set -euo pipefail
-            echo "===== sshd auth policy ====="
+            echo "===== identity ====="
+            whoami
+            hostname
+            date -u
+            echo "===== sshd files (auth-related, including comments) ====="
             for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf; do
               [ -f "$f" ] || continue
               echo "-- $f --"
-              grep -E '^(PermitRootLogin|PasswordAuthentication|KbdInteractiveAuthentication|AuthenticationMethods|PubkeyAuthentication)\b' "$f" || true
+              grep -nEi 'permitrootlogin|passwordauthentication|kbdinteractive|pubkeyauthentication|authenticationmethods' "$f" || true
             done
-            echo "===== effective sshd -T (filtered) ====="
-            if command -v sudo >/dev/null && sudo -n /usr/sbin/sshd -T >/tmp/sshd-t.txt 2>/dev/null; then
-              grep -E '^(permitrootlogin|passwordauthentication|kbdinteractiveauthentication|pubkeyauthentication)\b' /tmp/sshd-t.txt || true
-            else
-              echo "cannot run sshd -T (no passwordless sudo for it)"
-            fi
             echo "===== qemu-guest-agent ====="
-            systemctl is-active qemu-guest-agent 2>/dev/null || echo "inactive-or-missing"
-            systemctl is-enabled qemu-guest-agent 2>/dev/null || true
-            echo "===== root account status (if readable) ====="
-            passwd -S root 2>/dev/null || echo "passwd -S root not permitted"
-            echo "===== done policy ====="
-
-      - name: Try root password from Hetzner screenshot
-        id: root_screenshot
-        continue-on-error: true
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: root
-          password: uhkueqqNH4Vb
-          port: 22
-          command_timeout: 2m
-          script: |
-            set -euo pipefail
-            echo "ROOT_SCREENSHOT_PASSWORD_OK"
-            whoami
-            hostname
-
-      - name: Try earlier chat root password
-        id: root_chat
-        continue-on-error: true
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: root
-          password: ueUaLhxnVgp3
-          port: 22
-          command_timeout: 2m
-          script: |
-            set -euo pipefail
-            echo "ROOT_CHAT_PASSWORD_OK"
-            whoami
-            hostname
-
-      - name: Summarize credential check
-        run: |
-          echo "screenshot_password_step=${{ steps.root_screenshot.outcome }}"
-          echo "chat_password_step=${{ steps.root_chat.outcome }}"
-          if [ "${{ steps.root_screenshot.outcome }}" = "success" ]; then
-            echo "RESULT: Hetzner screenshot root password WORKS"
-          else
-            echo "RESULT: Hetzner screenshot root password FAILED"
-          fi
-          if [ "${{ steps.root_chat.outcome }}" = "success" ]; then
-            echo "RESULT: earlier chat root password WORKS"
-          else
-            echo "RESULT: earlier chat root password FAILED"
-          fi
+            systemctl is-active qemu-guest-agent 2>&1 || true
+            systemctl is-enabled qemu-guest-agent 2>&1 || true
+            dpkg -l qemu-guest-agent 2>/dev/null | tail -n 1 || true
+            echo "===== auth.log root ssh hints (last) ====="
+            if [ -r /var/log/auth.log ]; then
+              grep -E 'sshd.*(root|Failed password|Invalid user)' /var/log/auth.log | tail -n 20 || true
+            else
+              echo "auth.log not readable by $(whoami)"
+            fi
+            echo "===== done ====="
