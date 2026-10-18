@@ -17,7 +17,7 @@ export const externalShopProducts: ExternalShopProduct[] = [
     slug: "petpal-gps-tracker",
     name: "PetPal GPS Pet Tracker",
     shortDescription:
-      "Live GPS pet tracker for Cyprus—location history and routes in the PetPal app. Sold on PetPal Care Hub.",
+      "Know where your pet is—live location, history and routes in the PetPal app. Buy on PetPal Care Hub.",
     priceCents: 3999,
     compareAtCents: null,
     type: "PHYSICAL",
@@ -28,7 +28,7 @@ export const externalShopProducts: ExternalShopProduct[] = [
     features: [
       "Live location in the PetPal app",
       "Location history and routes",
-      "Hardware from €39.99 (subscription sold separately on PetPal)",
+      "Collar-ready carbon-fibre tracker from €39.99",
     ],
     stock: null,
     externalUrl: petpal.shopUrl,

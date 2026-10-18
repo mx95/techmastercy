@@ -12,7 +12,7 @@ import { breadcrumbJsonLd, createMetadata } from "@/lib/seo";
 export const metadata = createMetadata({
   title: "Shop",
   description:
-    "Buy car tech, smart finders and upcoming developer tools from TechmasterCY. PetPal GPS trackers link out to petpal.com.cy.",
+    "Shop AirTag finders and car tech on TechmasterCY. PetPal GPS pet trackers open petpal.com.cy for checkout.",
   path: "/shop",
 });
 
@@ -64,8 +64,8 @@ export default async function ShopPage({
       <SectionHeading
         className="mt-6"
         eyebrow="Shop"
-        title="Technology products with clear checkout"
-        description="Browse published catalogue items. Local checkout is server-validated. PetPal GPS trackers open petpal.com.cy for purchase."
+        title="Tech you can buy today"
+        description="Local checkout is validated on the server. PetPal GPS trackers send you to petpal.com.cy—same builder, separate shop."
       />
       <div className="mt-8">
         <Suspense fallback={<div className="surface h-28 animate-pulse rounded-lg" />}>

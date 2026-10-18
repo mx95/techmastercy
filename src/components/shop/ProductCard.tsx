@@ -21,14 +21,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
     <article className="surface group flex h-full min-w-0 flex-col overflow-hidden rounded-lg transition hover:border-accent/40">
       <Link
         href={href}
-        className="relative block aspect-[4/3] bg-background-soft"
+        className="relative block aspect-[4/3] bg-[#f4f7fb]"
         {...linkProps}
       >
         <Image
           src={image}
           alt={product.name}
           fill
-          className="object-cover bg-[#f4f7fb] transition duration-500 group-hover:scale-[1.02]"
+          className="object-contain p-3 transition duration-500 group-hover:scale-[1.03]"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           quality={85}
         />
@@ -61,7 +61,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </p>
         <div className="mt-4 flex flex-wrap items-baseline gap-2">
           <span className="text-lg font-semibold text-accent-soft">
-            {formatEur(displayPriceCents)}
+            {isExternal ? `From ${formatEur(displayPriceCents)}` : formatEur(displayPriceCents)}
           </span>
           {product.compareAtCents && product.compareAtCents > displayPriceCents ? (
             <span className="text-sm text-foreground-muted line-through">
@@ -70,9 +70,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           ) : null}
         </div>
         {isExternal ? (
-          <p className="mt-2 text-xs text-foreground-muted">
+          <Link
+            href={href}
+            className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-[#041018] transition hover:bg-accent-soft"
+            {...linkProps}
+          >
             {product.externalCta || "Buy on partner site"} →
-          </p>
+          </Link>
         ) : null}
         {outOfStock ? (
           <p className="mt-2 text-xs text-danger">Sold out</p>

@@ -225,6 +225,14 @@
     scroll-behavior: auto;
   }
 
+  .animate-fade-up,
+  .animate-fade-in,
+  .animate-accent-line {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   *,
   *::before,
   *::after {
