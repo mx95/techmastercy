@@ -7,6 +7,8 @@ import { siteConfig } from "@/lib/config";
 import { listPublishedProducts } from "@/lib/products";
 import { createMetadata } from "@/lib/seo";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = createMetadata({
   title: "AI, payments, websites & smarthome | Cyprus",
   description:
