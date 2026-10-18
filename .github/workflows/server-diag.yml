@@ -49,3 +49,60 @@ jobs:
               echo "auth.log not readable by $(whoami)"
             fi
             echo "===== done ====="
+
+  enable-https:
+    name: Certbot + nginx HTTPS
+    needs: ssh-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Confirm public DNS points at Hetzner
+        run: |
+          set -euo pipefail
+          want="46.225.180.168"
+          apex="$(dig +short techmaster.com.cy A | head -n1 || true)"
+          www="$(dig +short www.techmaster.com.cy A | head -n1 || true)"
+          echo "apex=${apex:-none} www=${www:-none}"
+          if [ "${apex}" != "${want}" ] || [ "${www}" != "${want}" ]; then
+            echo "::error::DNS not ready (want ${want})."
+            exit 1
+          fi
+
+      - name: Refresh ctl and enable HTTPS on server
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          command_timeout: 15m
+          script: |
+            set -euo pipefail
+            sudo -u tmcdeploy git -C /opt/techmastercy fetch --prune origin
+            BRANCH="cursor/server-access-diag-aabd"
+            if sudo -u tmcdeploy git -C /opt/techmastercy rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
+              REF="origin/${BRANCH}"
+            else
+              REF="origin/main"
+            fi
+            sudo -u tmcdeploy git -C /opt/techmastercy show "${REF}:deploy/techmastercy-ctl.sh" \
+              > /tmp/techmastercy-ctl.sh
+            sudo install -m 0750 -o root -g root /tmp/techmastercy-ctl.sh /usr/local/sbin/techmastercy-ctl
+            rm -f /tmp/techmastercy-ctl.sh
+            sudo -u tmcdeploy git -C /opt/techmastercy show "${REF}:deploy/nginx-https.conf" \
+              > /tmp/nginx-https.conf
+            sudo install -m 0644 /tmp/nginx-https.conf /opt/techmastercy/deploy/nginx-https.conf
+            rm -f /tmp/nginx-https.conf
+            sudo /usr/local/sbin/techmastercy-ctl enable-https techmaster.com.cy 46.225.180.168
+            sudo /usr/local/sbin/techmastercy-ctl health
+
+      - name: Probe HTTPS
+        run: |
+          set -euo pipefail
+          sleep 5
+          curl -fsS --connect-timeout 10 --max-time 20 \
+            "https://techmaster.com.cy/api/health"
+          curl -fsS --connect-timeout 10 --max-time 20 \
+            "https://www.techmaster.com.cy/api/health"
+          echo "HTTPS OK"
