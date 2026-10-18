@@ -1,0 +1,90 @@
+# Move techmaster.com.cy DNS from Shopify → Hetzner via Cloudflare API.
+# Requires production environment secrets:
+#   CLOUDFLARE_API_TOKEN  (Zone.DNS Edit + Zone.Zone Read)
+#   CLOUDFLARE_ZONE_ID    (optional; auto-detected from domain if omitted)
+#   DEPLOY_*              (optional follow-up HTTPS probe as tmcdeploy)
+name: Domain cutover
+
+on:
+  push:
+    branches:
+      - cursor/server-access-diag-aabd
+    paths:
+      - .github/workflows/domain-cutover.yml
+      - deploy/cloudflare-cutover.sh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cloudflare-dns:
+    name: Point DNS at Hetzner
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Require Cloudflare token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is missing in the production environment."
+            echo "DNS for techmaster.com.cy is on Cloudflare (bradley/carla.ns.cloudflare.com)."
+            echo "Create an API token with Zone.DNS Edit + Zone.Zone Read, add it as"
+            echo "CLOUDFLARE_API_TOKEN (and optionally CLOUDFLARE_ZONE_ID) under"
+            echo "GitHub → Settings → Environments → production → Secrets, then re-run."
+            exit 1
+          fi
+
+      - name: Update Cloudflare DNS to 46.225.180.168
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          DOMAIN: techmaster.com.cy
+          TARGET_IP: 46.225.180.168
+        run: |
+          chmod +x deploy/cloudflare-cutover.sh
+          ./deploy/cloudflare-cutover.sh
+
+      - name: Wait for public DNS to answer with Hetzner IP
+        run: |
+          set -euo pipefail
+          want="46.225.180.168"
+          for i in $(seq 1 30); do
+            apex="$(dig +short techmaster.com.cy A | head -n1 || true)"
+            www="$(dig +short www.techmaster.com.cy A | head -n1 || true)"
+            echo "attempt ${i}: apex=${apex:-none} www=${www:-none}"
+            if [ "${apex}" = "${want}" ] && [ "${www}" = "${want}" ]; then
+              echo "DNS cutover visible publicly."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::warning::Cloudflare update ran but public dig has not fully propagated yet."
+          echo "Recheck shortly: dig +short techmaster.com.cy"
+
+  verify-http:
+    name: Verify site over domain HTTP
+    needs: cloudflare-dns
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - name: Curl domain via Host header / public DNS
+        run: |
+          set -euo pipefail
+          echo "Public A records:"
+          dig +short techmaster.com.cy A || true
+          dig +short www.techmaster.com.cy A || true
+          echo "HTTP health via server IP with Host header:"
+          curl -fsS -H 'Host: techmaster.com.cy' --connect-timeout 5 --max-time 15 \
+            "http://46.225.180.168/api/health" || echo "host-header health failed"
+          if dig +short techmaster.com.cy A | grep -qx '46.225.180.168'; then
+            echo "HTTP health via public domain:"
+            curl -fsS --connect-timeout 5 --max-time 15 \
+              "http://techmaster.com.cy/api/health" || echo "domain health failed (TLS/CDN cache?)"
+          fi

@@ -120,6 +120,11 @@ cmd_deploy() {
 
   log "deploying ${target_sha} (previous=${previous:-none})"
   checkout_sha "${target_sha}"
+  # Refresh the installed ctl from the checked-out tree so new commands ship with deploys.
+  if [[ -f "${APP_DIR}/deploy/techmastercy-ctl.sh" ]]; then
+    install -m 0750 -o root -g root "${APP_DIR}/deploy/techmastercy-ctl.sh" /usr/local/sbin/techmastercy-ctl
+    log "refreshed /usr/local/sbin/techmastercy-ctl from deploy tree"
+  fi
 
   if ! compose_up "${target_sha}"; then
     log "deploy failed; attempting rollback to ${previous:-none}"
@@ -152,6 +157,9 @@ cmd_rollback() {
 
   log "rolling back to ${previous}"
   checkout_sha "${previous}"
+  if [[ -f "${APP_DIR}/deploy/techmastercy-ctl.sh" ]]; then
+    install -m 0750 -o root -g root "${APP_DIR}/deploy/techmastercy-ctl.sh" /usr/local/sbin/techmastercy-ctl
+  fi
   compose_up "${previous}"
   local current
   current="$(cat "${CURRENT_SHA_FILE}" 2>/dev/null || true)"
@@ -162,16 +170,82 @@ cmd_rollback() {
   log "rollback succeeded: ${previous}"
 }
 
+cmd_dns_check() {
+  local domain="${1:-techmaster.com.cy}"
+  local want="${2:-46.225.180.168}"
+  local apex www
+  apex="$(dig +short "${domain}" A | head -n1 || true)"
+  www="$(dig +short "www.${domain}" A | head -n1 || true)"
+  echo "apex=${apex:-none}"
+  echo "www=${www:-none}"
+  echo "want=${want}"
+  [[ "${apex}" == "${want}" && "${www}" == "${want}" ]] || die "DNS does not point at ${want} yet"
+  log "DNS OK for ${domain} and www"
+}
+
+cmd_enable_https() {
+  require_root
+  require_env
+
+  local domain="${1:-techmaster.com.cy}"
+  local want_ip="${2:-46.225.180.168}"
+
+  if ! command -v dig >/dev/null 2>&1; then
+    apt-get update -y
+    apt-get install -y dnsutils
+  fi
+  cmd_dns_check "${domain}" "${want_ip}"
+
+  mkdir -p /var/www/certbot
+  if ! command -v certbot >/dev/null 2>&1; then
+    apt-get update -y
+    apt-get install -y certbot python3-certbot-nginx
+  fi
+
+  # Issue/renew while HTTP nginx is still serving port 80.
+  certbot --nginx -d "${domain}" -d "www.${domain}" --non-interactive --agree-tos \
+    --register-unsafely-without-email --redirect || \
+    certbot certonly --webroot -w /var/www/certbot -d "${domain}" -d "www.${domain}" \
+      --non-interactive --agree-tos --register-unsafely-without-email
+
+  [[ -f "/etc/letsencrypt/live/${domain}/fullchain.pem" ]] || die "certificate missing after certbot"
+
+  install -m 0644 "${APP_DIR}/deploy/nginx-https.conf" /etc/nginx/sites-available/techmastercy
+  nginx -t
+  systemctl reload nginx
+
+  # Align app URLs for production HTTPS.
+  if [[ -f "${APP_DIR}/.env" ]]; then
+    sed -i "s|^APP_URL=.*|APP_URL=\"https://${domain}\"|" "${APP_DIR}/.env"
+    sed -i "s|^SITE_URL=.*|SITE_URL=\"https://${domain}\"|" "${APP_DIR}/.env"
+    if grep -q '^COOKIE_SECURE=' "${APP_DIR}/.env"; then
+      sed -i 's|^COOKIE_SECURE=.*|COOKIE_SECURE="true"|' "${APP_DIR}/.env"
+    else
+      printf '\nCOOKIE_SECURE="true"\n' >> "${APP_DIR}/.env"
+    fi
+    local sha
+    sha="$(cat "${CURRENT_SHA_FILE}" 2>/dev/null || git_sha_at_head)"
+    export IMAGE_TAG="${sha:0:12}"
+    export DEPLOY_GIT_SHA="${sha}"
+    "${COMPOSE[@]}" up -d --remove-orphans app
+    wait_for_health 45
+  fi
+
+  log "HTTPS enabled for ${domain}"
+}
+
 usage() {
   cat <<'EOF'
 Usage: techmastercy-ctl <command> [args]
 
 Commands:
-  deploy <git-sha>   Fetch, checkout, build, restart, health-check
-  rollback           Redeploy the previous recorded git sha
-  status             Show deploy state, compose ps, health
-  health             Curl the local health endpoint
-  logs [lines]       Tail application logs (default 200)
+  deploy <git-sha>              Fetch, checkout, build, restart, health-check
+  rollback                      Redeploy the previous recorded git sha
+  status                        Show deploy state, compose ps, health
+  health                        Curl the local health endpoint
+  logs [lines]                  Tail application logs (default 200)
+  dns-check [domain] [ip]       Verify public DNS points at this server
+  enable-https [domain] [ip]    Certbot + nginx HTTPS after DNS cut-over
 EOF
 }
 
@@ -184,6 +258,8 @@ main() {
     status) cmd_status "$@" ;;
     health) cmd_health "$@" ;;
     logs) cmd_logs "$@" ;;
+    dns-check) cmd_dns_check "$@" ;;
+    enable-https) cmd_enable_https "$@" ;;
     -h|--help|help|"") usage ;;
     *) die "unknown command: ${cmd}" ;;
   esac

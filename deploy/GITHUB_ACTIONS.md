@@ -25,6 +25,8 @@ Create under **Settings → Secrets and variables → Actions**:
 | `DEPLOY_USER` | `tmcdeploy` | Least-privilege user (never `root`) |
 | `DEPLOY_SSH_KEY` | Private key PEM for `tmcdeploy` | Generate a **new** keypair for Actions; do not reuse your personal admin key in the repo |
 | `DEPLOY_SSH_FINGERPRINT` | `SHA256:Mg+G1KRNOAzTDxtp9I+1Dbhjkj3y2Xkhy2JBEnrXLAM` | Host ED25519 fingerprint verified from the live server |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token | Zone.DNS Edit + Zone.Zone Read for `techmaster.com.cy` (domain cutover workflow) |
+| `CLOUDFLARE_ZONE_ID` | Zone id (optional) | Auto-detected from the domain if omitted |
 
 ### Generate the deploy keypair (on your PC)
 
