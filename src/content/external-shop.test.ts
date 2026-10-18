@@ -11,6 +11,7 @@ describe("external shop catalogue", () => {
     expect(product?.externalUrl).toBe("https://petpal.com.cy/shop");
     expect(product?.priceCents).toBe(3999);
     expect(product?.externalCta).toMatch(/PetPal/i);
+    expect(product?.images[0]).toContain("gps-collar-tracker");
   });
 
   it("filters by query and category", () => {

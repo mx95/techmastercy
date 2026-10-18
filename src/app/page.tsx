@@ -1,8 +1,11 @@
-import Link from "next/link";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
 import { SectionHeading } from "@/components/site/SectionHeading";
+import {
+  ServiceOfferCard,
+  type ServiceOffer,
+} from "@/components/site/ServiceOfferCard";
 import { siteConfig } from "@/lib/config";
 import { listPublishedProducts } from "@/lib/products";
 import { createMetadata } from "@/lib/seo";
@@ -16,34 +19,46 @@ export const metadata = createMetadata({
   path: "/",
 });
 
-const offers = [
+const offers: ServiceOffer[] = [
   {
-    title: "Get AI into real work—not another unused tool",
-    body: "I help you pick the right AI approach, wire it into your workflows, and keep humans in control where it matters.",
+    name: "AI consulting & setup",
+    summary: "Put AI into real workflows",
+    detail:
+      "Choose tools, connect them to your process, and keep human review where it matters—so AI helps staff instead of sitting unused.",
     href: "/services/ai-consulting-implementation",
     label: "Explore AI setup",
-    outcome: "Clear plan + working setup",
+    iconSrc: "/images/services/ai.svg",
+    iconAlt: "AI consulting icon",
   },
   {
-    title: "Make online payments reliable end to end",
-    body: "Checkout, callbacks and order status stay aligned—so customers pay once and you know it worked.",
+    name: "Payment web integrations",
+    summary: "Checkout that stays reliable",
+    detail:
+      "Connect your site or app to payment systems so customers pay once and order status matches what actually happened.",
     href: "/services/payment-gateway-integration",
     label: "Fix payments",
-    outcome: "Fewer failed or stuck payments",
+    iconSrc: "/images/services/payments.svg",
+    iconAlt: "Payment integration icon",
   },
   {
-    title: "Get calm help when the website or API breaks",
-    body: "Scoped remote support for sites, deployments and everyday technical issues—business hours, clear findings, no fog.",
+    name: "Website general support",
+    summary: "Help when things break",
+    detail:
+      "Scoped remote help for websites, APIs and deployments—business hours, clear findings, no vague retainers.",
     href: "/services/technical-support",
-    label: "Get website support",
-    outcome: "Faster answers, less downtime",
+    label: "Get support",
+    iconSrc: "/images/services/website-support.svg",
+    iconAlt: "Website support icon",
   },
   {
-    title: "Connect cameras, hubs and finders that actually work together",
-    body: "Practical smarthome consulting for homes and small businesses—plan first, then integrate cleanly.",
+    name: "Smarthome consulting",
+    summary: "Devices that work together",
+    detail:
+      "Plan and integrate cameras, hubs, finders and related systems for homes and small businesses in Cyprus.",
     href: "/services/smarthome-consulting-integration",
     label: "Plan smarthome",
-    outcome: "A setup you can run day to day",
+    iconSrc: "/images/services/smarthome.svg",
+    iconAlt: "Smarthome consulting icon",
   },
 ];
 
@@ -74,18 +89,18 @@ export default async function HomePage() {
           </p>
           <div className="animate-accent-line mt-4 h-px w-16 origin-left bg-accent delay-1" />
           <h1 className="animate-fade-up delay-1 mt-5 max-w-3xl text-balance font-display text-[2.1rem] font-semibold leading-[1.08] text-white sm:text-5xl lg:text-6xl">
-            Tech that works for your business in Cyprus
+            Four clear ways I can help your business
           </h1>
           <p className="animate-fade-up delay-2 mt-5 max-w-xl text-base leading-relaxed text-foreground-muted sm:text-lg">
-            Stuck payments, unused AI tools, fragile websites, messy smarthome gear—I help you fix
-            the thing that’s costing you time, then hand it back with clear notes.
+            AI setup, payment integrations, website support and smarthome consulting for Cyprus—plus
+            a small shop of useful trackers and car tech.
           </p>
           <div className="animate-fade-up delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Button href="/contact" size="lg" className="w-full sm:w-auto">
-              Tell me what you need
+            <Button href="#services" size="lg" className="w-full sm:w-auto">
+              See what I offer
             </Button>
-            <Button href="#services" variant="secondary" size="lg" className="w-full sm:w-auto">
-              See how I can help
+            <Button href="/contact" variant="secondary" size="lg" className="w-full sm:w-auto">
+              Tell me what you need
             </Button>
           </div>
           <p className="animate-fade-in delay-3 mt-6 max-w-xl text-sm text-foreground-muted">
@@ -94,41 +109,18 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-14 lg:py-18" id="services">
+      <section className="border-b border-white/10 py-14 lg:py-16" id="services">
         <Container>
           <SectionHeading
             eyebrow="Services"
-            title="Problems I help Cyprus businesses solve"
-            description="Pick the outcome you need. Each page explains the scope; you get a quote before anything starts."
+            title="What I can offer"
+            description="Each box is one service. Tap for scope details, then ask for a quote."
           />
-          <ol className="mt-10 space-y-0 divide-y divide-white/10 border-y border-white/10">
-            {offers.map((offer, index) => (
-              <li key={offer.href} className="animate-fade-up" style={{ animationDelay: `${0.08 * index}s` }}>
-                <Link
-                  href={offer.href}
-                  className="group flex flex-col gap-3 py-7 transition sm:flex-row sm:items-baseline sm:gap-8 sm:py-8"
-                >
-                  <span className="font-display text-sm font-semibold tabular-nums text-accent-soft">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-accent-soft/80">
-                      {offer.outcome}
-                    </p>
-                    <h2 className="mt-1 font-display text-xl font-semibold text-white group-hover:text-accent-soft sm:text-2xl">
-                      {offer.title}
-                    </h2>
-                    <p className="mt-2 max-w-2xl text-sm leading-relaxed text-foreground-muted sm:text-base">
-                      {offer.body}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold text-accent-soft opacity-90 group-hover:opacity-100">
-                    {offer.label} →
-                  </span>
-                </Link>
-              </li>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {offers.map((offer) => (
+              <ServiceOfferCard key={offer.href} offer={offer} />
             ))}
-          </ol>
+          </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-foreground-muted">
               Prefer email?{" "}
@@ -155,7 +147,7 @@ export default async function HomePage() {
           />
           <ol className="mt-10 grid gap-8 sm:grid-cols-3">
             {steps.map((step, index) => (
-              <li key={step.title} className="relative">
+              <li key={step.title}>
                 <p className="font-display text-sm font-semibold tabular-nums text-accent-soft">
                   {String(index + 1).padStart(2, "0")}
                 </p>
@@ -175,8 +167,8 @@ export default async function HomePage() {
         <Container>
           <SectionHeading
             eyebrow="Shop"
-            title="Useful tech you can buy today"
-            description="AirTag finders and car tech checkout here. PetPal GPS trackers open petpal.com.cy—same builder, separate shop."
+            title="Hardware you can buy today"
+            description="AirTag finders checkout here. The PetPal GPS collar tracker opens petpal.com.cy to buy."
           />
           {products.length === 0 ? (
             <p className="mt-8 text-foreground-muted">No products published yet.</p>
