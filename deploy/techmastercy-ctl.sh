@@ -256,6 +256,38 @@ cmd_seed() {
   log "seed complete"
 }
 
+cmd_set_stock() {
+  require_root
+  require_env
+  local slug="${1:-}"
+  local qty="${2:-}"
+  [[ -n "${slug}" && "${slug}" =~ ^[a-z0-9-]+$ ]] || die "usage: techmastercy-ctl set-stock <slug> <qty>"
+  [[ "${qty}" =~ ^[0-9]+$ ]] || die "usage: techmastercy-ctl set-stock <slug> <qty>"
+  log "setting stock for ${slug} -> ${qty}"
+  "${COMPOSE[@]}" exec -T -e "TMC_STOCK_SLUG=${slug}" -e "TMC_STOCK_QTY=${qty}" app \
+    npx tsx -e '
+      const { PrismaClient } = require("@prisma/client");
+      const prisma = new PrismaClient();
+      const slug = process.env.TMC_STOCK_SLUG;
+      const stock = Number(process.env.TMC_STOCK_QTY);
+      prisma.product.update({
+        where: { slug },
+        data: { stock },
+        select: { slug: true, name: true, stock: true },
+      })
+        .then((row) => {
+          console.log(JSON.stringify(row));
+          return prisma.$disconnect();
+        })
+        .catch(async (err) => {
+          console.error(err);
+          await prisma.$disconnect();
+          process.exit(1);
+        });
+    '
+  log "stock update complete"
+}
+
 usage() {
   cat <<'EOF'
 Usage: techmastercy-ctl <command> [args]
@@ -268,6 +300,7 @@ Commands:
   logs [lines]                  Tail application logs (default 200)
   prune                         Free disk via docker builder/system prune
   seed                          Upsert catalogue seed (fixes product prices)
+  set-stock <slug> <qty>        Set published product stock count
   dns-check [domain] [ip]       Verify public DNS points at this server
   enable-https [domain] [ip]    Certbot + nginx HTTPS after DNS cut-over
 EOF
@@ -284,6 +317,7 @@ main() {
     logs) cmd_logs "$@" ;;
     prune) cmd_prune "$@" ;;
     seed) cmd_seed "$@" ;;
+    set-stock) cmd_set_stock "$@" ;;
     dns-check) cmd_dns_check "$@" ;;
     enable-https) cmd_enable_https "$@" ;;
     -h|--help|help|"") usage ;;

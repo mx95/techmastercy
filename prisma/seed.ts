@@ -82,7 +82,7 @@ async function main() {
       status: "PUBLISHED",
       type: "PHYSICAL",
       requiresShipping: true,
-      stock: 0,
+      stock: 1,
       categoryId: carTech.id,
       features: JSON.stringify([
         "Cabin camera + wireless Apple CarPlay",
@@ -135,7 +135,7 @@ async function main() {
       status: "PUBLISHED",
       type: "PHYSICAL",
       requiresShipping: true,
-      stock: 0,
+      stock: 1,
       sku: "OTTO-CABIN-CARE",
       categoryId: carTech.id,
       features: JSON.stringify([

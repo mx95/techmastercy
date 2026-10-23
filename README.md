@@ -9,7 +9,7 @@ Stack: **Next.js 16 (App Router)**, **Prisma + SQLite**, payment adapters (mock 
 - Premium public site: home, services (8 detail pages), about, contact, FAQ, legal drafts, articles
 - Interactive shop: listing, filters, search, sort, product detail, cart drawer + cart page, checkout
 - Seeded catalogue from current Shopify prices:
-  - Ottocast Cabin Care — €89.99 (was €124.99), stock 0 (sold out on Shopify)
+  - Ottocast Cabin Care — €89.99 (was €124.99), stock 1
   - Mini AirTag Finder — €4.99
   - Webhook Reliability Kit — draft/unpublished (€49 / €149 licence options)
 - Server-priced checkout + quote verification; mock payments (dev), Revolut Pro static payment links, and JCC adapter skeleton
@@ -141,7 +141,7 @@ Actions never SSH as `root`. The deploy user is not added to the `docker` group.
 
 - JCC provider methods throw until implemented against merchant docs
 - Digital product file packaging (webhook kit remains `DRAFT` without downloadable archives)
-- Ottocast Cabin Care is seeded as sold out (stock 0) to match Shopify — update stock in admin when available
+- Ottocast Cabin Care is seeded with stock 1 — update stock in admin as units sell
 - Legal draft pages require professional review before launch
 - Automated off-site backup/restore drill should be run once on the real VPS
 - Do not point DNS away from Shopify until staging checkout and HTTPS are verified

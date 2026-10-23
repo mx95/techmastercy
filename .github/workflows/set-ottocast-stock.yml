@@ -1,0 +1,47 @@
+# One-shot: deploy this branch and set Ottocast Cabin Care stock to 1.
+name: Set Ottocast stock
+
+on:
+  push:
+    branches:
+      - cursor/ottocast-stock-one-aabd
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  set-stock:
+    name: Deploy and set Ottocast stock to 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production
+    steps:
+      - name: Deploy SHA then set-stock
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          command_timeout: 35m
+          script: |
+            set -euo pipefail
+            APP=/opt/techmastercy
+            CTL=/usr/local/sbin/techmastercy-ctl
+            BRANCH=cursor/ottocast-stock-one-aabd
+
+            git config --global --add safe.directory "$APP" || true
+            git -C "$APP" fetch --prune origin
+            SHA=$(git -C "$APP" rev-parse "origin/${BRANCH}")
+            echo "Deploying $SHA"
+            sudo -n "$CTL" deploy "$SHA"
+            # deploy refreshes ctl from the tree; set-stock is available after that
+            sudo -n "$CTL" set-stock ottocast-cabin-care 1
+            sudo -n "$CTL" health
+
+            curl -fsS --max-time 15 https://techmaster.com.cy/shop/ottocast-cabin-care \
+              | tr '\n' ' ' \
+              | grep -oE 'Sold out|[0-9]+ in stock|stock.:[0-9]+' \
+              | head -n 20 || true
+            echo OTTOCAST_STOCK_OK
