@@ -32,10 +32,14 @@ describe("sitemap exclusions", () => {
       paths.some((p) => p === "/checkout" || p.startsWith("/checkout/")),
     ).toBe(false);
     expect(paths).toContain("/");
+    expect(paths).toContain("/about");
+    expect(paths).toContain("/articles");
+    expect(paths).toContain("/articles/jcc-integration-checklist-cyprus");
     expect(paths).toContain("/shop/mini-airtag-finder");
     expect(paths).toContain("/services/ai-automation");
     expect(paths).toContain("/services/ai-consulting-implementation");
     expect(paths).toContain("/services/technical-support");
     expect(paths).toContain("/services/smarthome-consulting-integration");
+    expect(paths.some((p) => p.includes("petpal"))).toBe(false);
   });
 });

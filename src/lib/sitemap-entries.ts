@@ -1,3 +1,4 @@
+import { articles } from "@/content/articles";
 import { services } from "@/content/services";
 
 /** Paths that must never appear in the public sitemap. */
@@ -25,6 +26,7 @@ export type SitemapEntry = {
 /**
  * Public URL paths eligible for sitemap inclusion.
  * Keep this list aligned with real public routes as they ship.
+ * Do not include outbound 308 shop aliases (e.g. PetPal).
  */
 export function buildSitemapEntries(options?: {
   productSlugs?: string[];
@@ -34,10 +36,14 @@ export function buildSitemapEntries(options?: {
     { path: "/shop", changeFrequency: "daily", priority: 0.9 },
     { path: "/services", changeFrequency: "weekly", priority: 0.9 },
     { path: "/services/ai-automation", changeFrequency: "weekly", priority: 0.9 },
+    { path: "/about", changeFrequency: "monthly", priority: 0.6 },
     { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { path: "/faq", changeFrequency: "monthly", priority: 0.6 },
+    { path: "/articles", changeFrequency: "weekly", priority: 0.7 },
     { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
     { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
+    { path: "/refunds", changeFrequency: "yearly", priority: 0.3 },
+    { path: "/licence", changeFrequency: "yearly", priority: 0.3 },
   ];
 
   for (const service of services) {
@@ -45,6 +51,14 @@ export function buildSitemapEntries(options?: {
       path: `/services/${service.slug}`,
       changeFrequency: "monthly",
       priority: 0.8,
+    });
+  }
+
+  for (const article of articles) {
+    entries.push({
+      path: `/articles/${article.slug}`,
+      changeFrequency: "monthly",
+      priority: 0.6,
     });
   }
 
@@ -56,7 +70,14 @@ export function buildSitemapEntries(options?: {
     });
   }
 
-  return entries.filter((entry) => !isExcludedFromSitemap(entry.path));
+  // Deduplicate (e.g. services listed both statically and from content).
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (isExcludedFromSitemap(entry.path)) return false;
+    if (seen.has(entry.path)) return false;
+    seen.add(entry.path);
+    return true;
+  });
 }
 
 export function isExcludedFromSitemap(path: string): boolean {
