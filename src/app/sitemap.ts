@@ -1,40 +1,14 @@
 import type { MetadataRoute } from "next";
-import { services } from "@/content/services";
 import { siteConfig } from "@/lib/config";
 import { prisma } from "@/lib/db";
+import { buildSitemapEntries } from "@/lib/sitemap-entries";
+
+/** Always rebuild from the live catalogue so Google Search Console stays current. */
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url.replace(/\/$/, "");
 
-  const staticRoutes = [
-    "",
-    "/services",
-    "/services/ai-automation",
-    "/shop",
-    "/about",
-    "/contact",
-    "/faq",
-    "/privacy",
-    "/terms",
-    "/refunds",
-    "/licence",
-    "/articles",
-  ].map((path) => ({
-    url: `${base}${path || "/"}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority:
-      path === "" ? 1 : path === "/services/ai-automation" || path === "/services" ? 0.9 : 0.7,
-  }));
-
-  const serviceRoutes = services.map((service) => ({
-    url: `${base}/services/${service.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  }));
-
-  // Build-time / empty DBs must not fail the production image build.
   let products: Array<{ slug: string; updatedAt: Date }> = [];
   try {
     products = await prisma.product.findMany({
@@ -45,20 +19,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     products = [];
   }
 
-  const productRoutes = products.map((product) => ({
-    url: `${base}/shop/${product.slug}`,
-    lastModified: product.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+  const productLastMod = new Map(
+    products.map((product) => [product.slug, product.updatedAt]),
+  );
 
-  const { articles } = await import("@/content/articles");
-  const articleRoutes = articles.map((article) => ({
-    url: `${base}/articles/${article.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  const entries = buildSitemapEntries({
+    productSlugs: products.map((product) => product.slug),
+  });
 
-  return [...staticRoutes, ...serviceRoutes, ...productRoutes, ...articleRoutes];
+  const now = new Date();
+
+  return entries.map((entry) => {
+    const slug = entry.path.startsWith("/shop/")
+      ? entry.path.slice("/shop/".length)
+      : null;
+
+    return {
+      url: entry.path === "/" ? `${base}/` : `${base}${entry.path}`,
+      lastModified: (slug && productLastMod.get(slug)) || now,
+      changeFrequency: entry.changeFrequency,
+      priority: entry.priority,
+    };
+  });
 }
