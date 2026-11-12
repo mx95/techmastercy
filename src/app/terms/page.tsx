@@ -5,7 +5,8 @@ import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
   title: "Terms and conditions",
-  description: "Draft terms and conditions for TechmasterCY.",
+  description:
+    "Terms for using TechmasterCY websites, services and digital products. Review status is noted on the page.",
   path: "/terms",
 });
 

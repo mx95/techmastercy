@@ -24,11 +24,11 @@ export const metadata = createMetadata({
 });
 
 const paymentExamples = [
-  { label: "JCC payment integration", href: "/services/jcc-payment-integration" },
-  { label: "Payment gateway integrations", href: "/services/payment-gateway-integration" },
-  { label: "3-D Secure (3DS) flows", href: "/services/payment-solutions" },
-  { label: "Apple Pay & Google Pay", href: "/services/payment-solutions" },
-  { label: "Webhook implementation", href: "/services/api-webhook-integration" },
+  { label: "Payment gateway integrations", href: "/payment-integration" },
+  { label: "Stripe integration", href: "/stripe-integration" },
+  { label: "JCC payment integration", href: "/jcc-integration" },
+  { label: "3-D Secure (3DS) flows", href: "/3ds-integration" },
+  { label: "Webhook implementation", href: "/payment-webhooks" },
   { label: "Payment troubleshooting", href: "/services/payment-troubleshooting" },
 ];
 
@@ -47,6 +47,7 @@ const otherServices = servicePillars
     href: `/services/${pillar.slug}`,
     examples: pillar.examples,
     iconSrc: pillar.iconSrc,
+    iconAlt: pillar.iconAlt,
   }));
 
 const trustPoints = [
@@ -199,7 +200,7 @@ export default async function HomePage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={service.iconSrc}
-                      alt=""
+                      alt={service.iconAlt}
                       width={56}
                       height={56}
                       className="h-14 w-14 shrink-0"

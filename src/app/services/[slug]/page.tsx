@@ -10,6 +10,7 @@ import { formatEur } from "@/lib/money";
 import {
   breadcrumbJsonLd,
   createMetadata,
+  faqJsonLd,
   serviceJsonLd,
 } from "@/lib/seo";
 
@@ -30,12 +31,9 @@ export async function generateMetadata({ params }: { params: Params }) {
       noIndex: true,
     });
   }
-  const title = /cyprus/i.test(service.title)
-    ? service.title
-    : `${service.title} Cyprus`;
   return createMetadata({
-    title,
-    description: `${service.summary} Serving businesses in Cyprus.`,
+    title: service.title,
+    description: `${service.summary} Cyprus-based team; international projects welcome.`,
     path: `/services/${service.slug}`,
   });
 }
@@ -193,6 +191,7 @@ export default async function ServiceDetailPage({ params }: { params: Params }) 
             description: service.summary,
             path: `/services/${service.slug}`,
           }),
+          faqJsonLd(service.faqs),
         ]}
       />
     </Container>

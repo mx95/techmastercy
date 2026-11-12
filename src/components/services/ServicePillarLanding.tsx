@@ -10,7 +10,7 @@ import {
   type ServicePillar,
 } from "@/content/service-pillars";
 import { formatEur } from "@/lib/money";
-import { breadcrumbJsonLd, serviceJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/seo";
 
 export function ServicePillarLanding({
   pillar,
@@ -36,6 +36,7 @@ export function ServicePillarLanding({
             description: pillar.description,
             path,
           }),
+          faqJsonLd(pillar.faqs),
         ]}
       />
 

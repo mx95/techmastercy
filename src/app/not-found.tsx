@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
+
+export const metadata: Metadata = {
+  title: "Page not found | TechmasterCY",
+  description: "That URL is not part of the TechmasterCY website.",
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (
@@ -17,6 +24,9 @@ export default function NotFound() {
         </Button>
         <Button href="/contact" variant="secondary" className="w-full sm:w-auto">
           Contact us
+        </Button>
+        <Button href="/payment-integration" variant="ghost" className="w-full sm:w-auto">
+          Payment integration
         </Button>
       </div>
     </Container>

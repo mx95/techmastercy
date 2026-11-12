@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Source_Sans_3 } from "next/font/google";
+import { AnalyticsConsent } from "@/components/analytics/AnalyticsConsent";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Footer } from "@/components/site/Footer";
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <Footer />
           <CartDrawer />
+          <AnalyticsConsent />
         </CartProvider>
       </body>
     </html>

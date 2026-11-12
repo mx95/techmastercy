@@ -35,6 +35,10 @@ describe("sitemap exclusions", () => {
     expect(paths).toContain("/about");
     expect(paths).toContain("/articles");
     expect(paths).toContain("/articles/jcc-integration-checklist-cyprus");
+    expect(paths).not.toContain("/articles/stripe-checkout-vs-payment-intents");
+    expect(paths).toContain("/payment-integration");
+    expect(paths).toContain("/stripe-integration");
+    expect(paths).toContain("/3ds-integration");
     expect(paths).toContain("/shop/mini-airtag-finder");
     expect(paths).toContain("/services/payment-solutions");
     expect(paths).toContain("/services/software-api-development");
@@ -44,5 +48,11 @@ describe("sitemap exclusions", () => {
     expect(paths).toContain("/services/technical-support");
     expect(paths).toContain("/services/smarthome-consulting-integration");
     expect(paths.some((p) => p.includes("petpal"))).toBe(false);
+
+    const shop = buildSitemapEntries({ productSlugs: ["mini-airtag-finder"] }).find(
+      (e) => e.path === "/shop",
+    );
+    const paymentLander = buildSitemapEntries().find((e) => e.path === "/payment-integration");
+    expect((shop?.priority ?? 1) < (paymentLander?.priority ?? 0)).toBe(true);
   });
 });
