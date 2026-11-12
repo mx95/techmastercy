@@ -1,11 +1,14 @@
+import Link from "next/link";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import {
-  ServiceOfferCard,
-  type ServiceOffer,
-} from "@/components/site/ServiceOfferCard";
+  ApiDiagram,
+  AutomationDiagram,
+  PaymentFlowDiagram,
+  WebhookDiagram,
+} from "@/components/site/TechDiagrams";
 import { servicePillars } from "@/content/service-pillars";
 import { siteConfig } from "@/lib/config";
 import { listPublishedProducts } from "@/lib/products";
@@ -14,130 +17,167 @@ import { createMetadata } from "@/lib/seo";
 export const dynamic = "force-dynamic";
 
 export const metadata = createMetadata({
-  title: "Technology & software engineering for businesses",
+  title: "Payments and technology, made simpler",
   description:
-    "TechmasterCY helps businesses integrate payments, build software and APIs, and improve digital solutions—from Cyprus to international projects.",
+    "TechmasterCY helps businesses integrate payment systems, connect applications and automate work that slows them down—from Cyprus to international projects.",
   path: "/",
 });
 
-const offers: ServiceOffer[] = servicePillars.map((pillar) => ({
-  name: pillar.title,
-  summary: pillar.summary,
-  detail: pillar.description,
-  href: `/services/${pillar.slug}`,
-  label: "Learn more",
-  iconSrc: pillar.iconSrc,
-  iconAlt: pillar.iconAlt,
-  examples: pillar.examples,
-  featured: pillar.featured,
-}));
-
-const expertise = [
-  {
-    title: "Payment integrations",
-    body: "Gateways, webhooks and checkout flows that keep order status honest.",
-  },
-  {
-    title: "API & backend development",
-    body: "REST services, integrations and systems that fit how your teams work.",
-  },
-  {
-    title: "Business automation",
-    body: "Practical AI and workflow automation with clear human oversight.",
-  },
-  {
-    title: "Custom digital solutions",
-    body: "Websites, e-commerce support and technology consulting when you need them.",
-  },
+const paymentExamples = [
+  { label: "JCC payment integration", href: "/services/jcc-payment-integration" },
+  { label: "Payment gateway integrations", href: "/services/payment-gateway-integration" },
+  { label: "3-D Secure (3DS) flows", href: "/services/payment-solutions" },
+  { label: "Apple Pay & Google Pay", href: "/services/payment-solutions" },
+  { label: "Webhook implementation", href: "/services/api-webhook-integration" },
+  { label: "Payment troubleshooting", href: "/services/payment-troubleshooting" },
 ];
 
-const reasons = [
+const otherServices = servicePillars
+  .filter((pillar) => !pillar.featured)
+  .map((pillar) => ({
+    title: pillar.title,
+    problem:
+      pillar.id === "software-api-development"
+        ? "Your systems need to exchange data reliably, or a custom backend has to fill a gap products cannot."
+        : pillar.id === "ai-business-automation"
+          ? "Teams repeat the same manual steps, or AI tools sit unused without clear guardrails."
+          : "Websites, shops or devices need practical help without an open-ended retainer.",
+    help: pillar.summary,
+    detail: pillar.description,
+    href: `/services/${pillar.slug}`,
+    examples: pillar.examples,
+    iconSrc: pillar.iconSrc,
+  }));
+
+const trustPoints = [
   {
-    title: "Direct technical communication",
-    body: "You talk with someone who can discuss systems, not a hand-off sales script.",
+    title: "Server-side payment verification",
+    body: "Paid status is confirmed on the server—not only from a browser thank-you page.",
   },
   {
-    title: "Solutions tailored to your requirements",
-    body: "Scope follows your platforms and constraints—not a one-size package.",
+    title: "Reliable webhook handling",
+    body: "Callbacks are verified, deduplicated and reconciled so retries do not create chaos.",
+  },
+  {
+    title: "Secure API communication",
+    body: "Integrations follow authenticated contracts and respect provider documentation.",
+  },
+  {
+    title: "Proper failure handling",
+    body: "Declines, timeouts and partial states are designed in—not discovered in production.",
+  },
+  {
+    title: "Documented implementations",
+    body: "Operators receive notes they can use after handover.",
   },
   {
     title: "Clear project scope",
-    body: "Inclusions, exclusions and estimates before work starts.",
-  },
-  {
-    title: "Practical implementation",
-    body: "Server-side verification, tested paths and notes operators can use.",
-  },
-  {
-    title: "Support beyond initial delivery",
-    body: "Follow-up help according to the agreed scope—not an open-ended promise.",
+    body: "Inclusions, exclusions and estimates are agreed before work starts.",
   },
 ];
 
 const steps = [
-  {
-    title: "Understand",
-    body: "We discuss your requirements and challenges.",
-  },
-  {
-    title: "Plan",
-    body: "We define the solution and project scope.",
-  },
-  {
-    title: "Build",
-    body: "We implement and test the solution.",
-  },
-  {
-    title: "Support",
-    body: "We assist after delivery according to the agreed scope.",
-  },
+  { title: "Understand", body: "We discuss your requirements and challenges." },
+  { title: "Plan", body: "We define the solution and project scope." },
+  { title: "Build", body: "We implement and test the solution." },
+  { title: "Support", body: "We assist after delivery according to the agreed scope." },
 ];
 
 export default async function HomePage() {
   const products = await listPublishedProducts({ sort: "relevance" });
+  const paymentPillar = servicePillars.find((p) => p.featured)!;
 
   return (
     <>
       <section className="hero-atmosphere relative overflow-hidden border-b border-white/10">
-        <Container className="relative py-16 sm:py-20 lg:py-28">
-          <p className="animate-fade-up font-display text-sm font-semibold uppercase tracking-[0.22em] text-accent-soft">
-            TechmasterCY
-          </p>
-          <div className="animate-accent-line mt-4 h-px w-16 origin-left bg-accent delay-1" />
-          <h1 className="animate-fade-up delay-1 mt-6 max-w-3xl text-balance font-display text-[2.15rem] font-semibold leading-[1.05] text-white sm:text-5xl lg:text-6xl">
-            Technology that moves your business forward.
-          </h1>
-          <p className="animate-fade-up delay-2 mt-5 max-w-2xl text-base leading-relaxed text-foreground-muted sm:text-lg">
-            From secure payment integrations to custom software and intelligent automation,
-            TechmasterCY helps businesses build reliable digital solutions without unnecessary
-            complexity.
-          </p>
-          <div className="animate-fade-up delay-3 mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Button href="/contact" size="lg" className="w-full sm:w-auto">
-              Let’s discuss your project
-            </Button>
-            <Button href="#services" variant="secondary" size="lg" className="w-full sm:w-auto">
-              Explore our services
-            </Button>
+        <Container className="relative grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
+          <div>
+            <p className="animate-fade-up font-display text-sm font-semibold uppercase tracking-[0.22em] text-accent-soft">
+              TechmasterCY
+            </p>
+            <div className="animate-accent-line mt-4 h-px w-16 origin-left bg-accent delay-1" />
+            <h1 className="animate-fade-up delay-1 mt-6 max-w-3xl text-balance font-display text-[2.15rem] font-semibold leading-[1.05] text-white sm:text-5xl lg:text-[3.25rem]">
+              Payments and technology, made simpler.
+            </h1>
+            <p className="animate-fade-up delay-2 mt-5 max-w-2xl text-base leading-relaxed text-foreground-muted sm:text-lg">
+              We help businesses integrate payment systems, connect their applications and automate
+              the work that slows them down.
+            </p>
+            <div className="animate-fade-up delay-3 mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button href="/contact" size="lg" className="w-full sm:w-auto">
+                Let’s discuss your project
+              </Button>
+              <Button
+                href="/services/payment-solutions"
+                variant="secondary"
+                size="lg"
+                className="w-full sm:w-auto"
+              >
+                Explore payment solutions
+              </Button>
+            </div>
+          </div>
+          <div className="animate-fade-in delay-2 hidden lg:block">
+            <PaymentFlowDiagram />
           </div>
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-14 lg:py-16" id="expertise">
+      <section className="border-b border-white/10 py-14 lg:py-16" id="payment-solutions">
         <Container>
-          <SectionHeading
-            eyebrow="Expertise"
-            title="What we help businesses do"
-            description="A technology and software engineering company helping you integrate, build and improve digital solutions."
-          />
-          <ul className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {expertise.map((item) => (
-              <li key={item.title}>
-                <h3 className="font-display text-lg font-semibold text-white">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground-muted">{item.body}</p>
-              </li>
-            ))}
-          </ul>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-soft">
+            Flagship service
+          </p>
+          <div className="mt-3 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+            <div>
+              <h2 className="font-display text-3xl font-semibold text-white sm:text-4xl">
+                {paymentPillar.title}
+              </h2>
+              <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground-muted sm:text-lg">
+                <span className="text-foreground">The problem: </span>
+                Checkout looks fine to customers, but orders stay stuck, callbacks fail, or nobody
+                trusts whether a payment actually completed.
+              </p>
+              <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground-muted sm:text-lg">
+                <span className="text-foreground">How we help: </span>
+                {paymentPillar.summary} TechmasterCY scopes the provider, implements the flow against
+                official documentation, and leaves operators with a clear path after go-live.
+              </p>
+              <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+                {paymentExamples.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      className="block rounded-md border border-white/10 bg-background-elevated/50 px-4 py-3 text-sm text-foreground transition hover:border-accent/40 hover:text-accent-soft"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button href="/services/payment-solutions" size="lg" className="w-full sm:w-auto">
+                  View payment solutions
+                </Button>
+                <Button
+                  href="/contact?service=payment-gateway-integration"
+                  variant="secondary"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  Discuss a payment project
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <PaymentFlowDiagram />
+              <WebhookDiagram />
+              <p className="text-xs text-foreground-muted">
+                Apple Pay, Google Pay and 3DS depend on the provider and merchant account—confirmed
+                before they are promised.
+              </p>
+            </div>
+          </div>
         </Container>
       </section>
 
@@ -145,33 +185,89 @@ export default async function HomePage() {
         <Container>
           <SectionHeading
             eyebrow="Services"
-            title="Four clear areas of work"
-            description="Payment Solutions is the primary specialist focus. The other areas support complete digital delivery."
+            title="Other ways we help"
+            description="After payments, TechmasterCY also builds software, automates workflows and supports digital systems—scoped clearly for business owners and technical teams."
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            {offers.map((offer) => (
-              <ServiceOfferCard key={offer.href} offer={offer} />
+          <div className="mt-10 space-y-10">
+            {otherServices.map((service, index) => (
+              <article
+                key={service.href}
+                className="grid gap-6 border-b border-white/10 pb-10 last:border-0 last:pb-0 lg:grid-cols-[1fr_0.85fr] lg:items-center"
+              >
+                <div>
+                  <div className="flex items-start gap-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={service.iconSrc}
+                      alt=""
+                      width={56}
+                      height={56}
+                      className="h-14 w-14 shrink-0"
+                    />
+                    <div>
+                      <p className="font-display text-sm font-semibold tabular-nums text-accent-soft">
+                        {String(index + 2).padStart(2, "0")}
+                      </p>
+                      <h3 className="mt-1 font-display text-2xl font-semibold text-white">
+                        {service.title}
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-sm leading-relaxed text-foreground-muted sm:text-base">
+                    <span className="font-medium text-foreground">The problem: </span>
+                    {service.problem}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground-muted sm:text-base">
+                    <span className="font-medium text-foreground">How we help: </span>
+                    {service.help}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-foreground-muted">
+                    {service.detail}
+                  </p>
+                  {service.examples?.length ? (
+                    <ul className="mt-4 flex flex-wrap gap-2">
+                      {service.examples.map((example) => (
+                        <li
+                          key={example}
+                          className="rounded-md border border-white/10 px-2.5 py-1 text-xs text-foreground-muted"
+                        >
+                          {example}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <Button href={service.href} className="mt-6">
+                    Learn more
+                  </Button>
+                </div>
+                <div className="hidden sm:block">
+                  {index === 0 ? <ApiDiagram /> : null}
+                  {index === 1 ? <AutomationDiagram /> : null}
+                  {index === 2 ? (
+                    <div className="rounded-xl border border-white/10 bg-[#0a101c] p-5 text-sm leading-relaxed text-foreground-muted">
+                      Websites, e-commerce support and smart technology advice—kept secondary to
+                      payment and software engineering.
+                    </div>
+                  ) : null}
+                </div>
+              </article>
             ))}
           </div>
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-14 lg:py-16" id="why">
+      <section className="border-b border-white/10 py-14 lg:py-16" id="practical-engineering">
         <Container>
           <SectionHeading
-            eyebrow="Why TechmasterCY"
-            title="Reasons customers get in touch"
-            description="Approachable technical help with transparent scope—without brochure claims."
+            eyebrow="Trust"
+            title="Practical engineering, not just integrations"
+            description="Factual delivery habits that keep payment and software work dependable."
           />
           <ul className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {reasons.map((reason) => (
-              <li key={reason.title}>
-                <h3 className="font-display text-lg font-semibold text-white">
-                  {reason.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
-                  {reason.body}
-                </p>
+            {trustPoints.map((point) => (
+              <li key={point.title}>
+                <h3 className="font-display text-lg font-semibold text-white">{point.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-foreground-muted">{point.body}</p>
               </li>
             ))}
           </ul>
@@ -191,9 +287,7 @@ export default async function HomePage() {
                 <p className="font-display text-sm font-semibold tabular-nums text-accent-soft">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <h3 className="mt-3 font-display text-xl font-semibold text-white">
-                  {step.title}
-                </h3>
+                <h3 className="mt-3 font-display text-xl font-semibold text-white">{step.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-foreground-muted sm:text-base">
                   {step.body}
                 </p>
@@ -203,62 +297,33 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      <section className="border-b border-white/10 py-14 lg:py-16" id="featured">
+      <section className="border-b border-white/10 py-12 lg:py-14" id="shop">
         <Container>
-          <SectionHeading
-            eyebrow="Featured"
-            title="Start with payments or software"
-            description="If you are unsure where you fit, these two paths cover most project enquiries."
-          />
-          <div className="mt-10 grid gap-8 lg:grid-cols-2">
-            <div>
-              <h3 className="font-display text-2xl font-semibold text-white">
-                Payment Solutions
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-foreground-muted sm:text-base">
-                Gateway integrations, webhooks, storefront payments and troubleshooting for Cyprus
-                and international merchants.
-              </p>
-              <Button href="/services/payment-solutions" className="mt-6">
-                Explore payment solutions
+          <div className="rounded-xl border border-dashed border-white/15 bg-background-elevated/30 px-5 py-8 sm:px-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
+                  Product shop
+                </p>
+                <h2 className="mt-2 font-display text-2xl font-semibold text-white">
+                  Hardware catalogue
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
+                  Separate from professional services. A small selection of technology products.
+                  PetPal GPS checkouts on petpal.com.cy with its own branding and payments.
+                </p>
+              </div>
+              <Button href="/shop" variant="secondary" className="w-full shrink-0 sm:w-auto">
+                Browse the shop
               </Button>
             </div>
-            <div>
-              <h3 className="font-display text-2xl font-semibold text-white">
-                Software & API Development
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-foreground-muted sm:text-base">
-                Custom backends, REST APIs and system integrations when products alone are not
-                enough.
-              </p>
-              <Button href="/services/software-api-development" className="mt-6">
-                Explore software & APIs
-              </Button>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-b border-white/10 py-14 lg:py-16" id="shop">
-        <Container>
-          <SectionHeading
-            eyebrow="Shop"
-            title="Selected hardware"
-            description="A small catalogue of useful products. PetPal GPS checkouts on petpal.com.cy."
-          />
-          {products.length === 0 ? (
-            <p className="mt-8 text-foreground-muted">No products published yet.</p>
-          ) : (
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-          <div className="mt-10">
-            <Button href="/shop" variant="secondary">
-              View full shop
-            </Button>
+            {products.length > 0 ? (
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {products.slice(0, 3).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : null}
           </div>
         </Container>
       </section>
@@ -269,11 +334,11 @@ export default async function HomePage() {
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.14),transparent_55%)]" />
             <div className="relative">
               <h2 className="font-display text-3xl font-semibold text-white sm:text-4xl">
-                Have a project in mind?
+                Not sure which solution you need?
               </h2>
               <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground-muted sm:text-lg">
-                Tell us what you’re trying to achieve. We’ll discuss your requirements and help you
-                identify the right approach.
+                Tell us about your challenge. We will help you work out the next step—whether you
+                are a business owner or a software agency.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button href="/contact" size="lg" className="w-full sm:w-auto">

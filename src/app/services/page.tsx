@@ -30,8 +30,8 @@ export default function ServicesPage() {
       <SectionHeading
         className="mt-6"
         eyebrow="Services"
-        title="Integrate, build and improve your digital solutions"
-        description="Four clear service areas. Payment Solutions is the primary specialist focus; every engagement is scoped to your systems and constraints."
+        title="Payments and technology services"
+        description="Payment Solutions is the flagship focus. Software, automation and digital solutions support complete delivery—each engagement scoped to your systems."
       />
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -136,11 +136,11 @@ export default function ServicesPage() {
 
       <div className="mt-16 border-t border-white/10 pt-12">
         <h2 className="font-display text-3xl font-semibold text-white">
-          Have a project in mind?
+          Not sure which solution you need?
         </h2>
         <p className="mt-3 max-w-2xl text-foreground-muted">
-          Tell us what you are trying to achieve. We will help you identify the right service area
-          and a practical next step.
+          Tell us about your challenge. We will help you identify the right service area and a
+          practical next step.
         </p>
         <Button href="/contact" size="lg" className="mt-7 w-full sm:w-auto">
           Start a conversation

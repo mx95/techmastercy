@@ -59,7 +59,7 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
             Start a conversation
           </h1>
           <p className="mt-3 max-w-lg text-sm leading-relaxed text-foreground-muted sm:text-base">
-            Not sure what you need? That’s fine. Tell us about the problem and we’ll help you work
+            Not sure which solution you need? Tell us about your challenge. We will help you work
             out the next step.
           </p>
           <div className="mt-4 space-y-1.5 text-sm text-foreground-muted">

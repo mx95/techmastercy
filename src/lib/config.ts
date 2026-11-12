@@ -15,7 +15,7 @@ export const siteConfig = {
   currency: "EUR" as const,
   businessEmail: process.env.BUSINESS_EMAIL || "support@techmaster.com.cy",
   description:
-    "TechmasterCY helps businesses integrate payments, build software and APIs, and improve digital solutions—from Cyprus to international projects.",
+    "Payments and technology, made simpler. TechmasterCY helps businesses integrate payment systems, connect applications and automate work that slows them down.",
   keywords: [
     "Payment gateway integration Cyprus",
     "Payment integration services",

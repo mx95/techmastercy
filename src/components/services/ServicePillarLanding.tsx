@@ -189,11 +189,11 @@ export function ServicePillarLanding({
 
       <section className="mt-16 border-t border-white/10 pt-12">
         <h2 className="font-display text-3xl font-semibold text-white">
-          Have a project in mind?
+          Not sure which solution you need?
         </h2>
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground-muted">
-          Tell us what you are trying to achieve. We will discuss your requirements and help you
-          identify the right approach.
+          Tell us about your challenge. We will discuss your requirements and help you identify the
+          right approach.
         </p>
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
           <Button

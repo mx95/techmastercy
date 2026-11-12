@@ -26,21 +26,22 @@ export default function AboutPage() {
         className="mt-6"
         eyebrow="About"
         title="Practical engineering you can talk to"
-        description="TechmasterCY helps businesses integrate, build and improve digital solutions—with payment systems as a specialist focus."
+        description="Payments and technology, made simpler. TechmasterCY is a technology and software engineering company with payment integrations as its specialist focus."
       />
 
       <div className="mt-10 max-w-3xl space-y-6 text-base leading-relaxed text-foreground-muted">
         <p>
-          The company works with merchants, product teams and agencies that need reliable technical
-          delivery without the theatre. That means clear scope, honest constraints and
-          implementations that operators can understand after handover.
+          We work with merchants, product teams and agencies that need reliable technical delivery
+          without the theatre. That means clear scope, honest constraints and implementations that
+          operators can understand after handover.
         </p>
         <p>
-          Work typically covers payment gateway integrations, APIs and webhooks, custom backend
-          services, business process automation, practical AI adoption where it fits a real
-          workflow, website and e-commerce support, and smart technology consulting when it is
-          useful. Stacks often include Java/Spring Boot, .NET and SQL-backed services alongside
-          storefront platforms such as WooCommerce and Shopify.
+          We help businesses integrate payment systems, connect their applications and automate the
+          work that slows them down. Typical work covers payment gateway integrations, APIs and
+          webhooks, custom backend services, business process automation, practical AI adoption
+          where it fits a real workflow, website and e-commerce support, and smart technology
+          consulting when it is useful. Stacks often include Java/Spring Boot, .NET and SQL-backed
+          services alongside storefront platforms such as WooCommerce and Shopify.
         </p>
         <p>
           The approach is deliberate: verify payment amounts on the server, design for retries and

@@ -47,7 +47,7 @@ export function BrandLogo({
         </span>
         {showTagline ? (
           <span className="mt-1 hidden text-[0.65rem] font-medium leading-none tracking-[0.04em] text-foreground-muted lg:block">
-            Payments · Automation · AI
+            Payments · Software · Automation
           </span>
         ) : null}
       </span>
