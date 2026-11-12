@@ -23,7 +23,7 @@ const sourceSans = Source_Sans_3({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  title: `${siteConfig.name} | Payment integrations & tech products Cyprus`,
+  title: `${siteConfig.name} | Technology & software engineering Cyprus`,
   description: siteConfig.description,
   keywords: siteConfig.keywords,
   alternates: {

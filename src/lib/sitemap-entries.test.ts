@@ -36,6 +36,9 @@ describe("sitemap exclusions", () => {
     expect(paths).toContain("/articles");
     expect(paths).toContain("/articles/jcc-integration-checklist-cyprus");
     expect(paths).toContain("/shop/mini-airtag-finder");
+    expect(paths).toContain("/services/payment-solutions");
+    expect(paths).toContain("/services/software-api-development");
+    expect(paths).toContain("/services/digital-solutions");
     expect(paths).toContain("/services/ai-automation");
     expect(paths).toContain("/services/ai-consulting-implementation");
     expect(paths).toContain("/services/technical-support");

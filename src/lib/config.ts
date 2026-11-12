@@ -15,17 +15,17 @@ export const siteConfig = {
   currency: "EUR" as const,
   businessEmail: process.env.BUSINESS_EMAIL || "support@techmaster.com.cy",
   description:
-    "Payment gateway integration Cyprus, JCC and storefront payment workflows, API integrations, business process automation, practical AI implementation and scoped technical support.",
+    "TechmasterCY helps businesses integrate payments, build software and APIs, and improve digital solutions—from Cyprus to international projects.",
   keywords: [
-    "Payment integration services Cyprus",
     "Payment gateway integration Cyprus",
+    "Payment integration services",
     "JCC payment integration Cyprus",
+    "Stripe integration Cyprus",
+    "API development Cyprus",
+    "Custom software development Cyprus",
     "WooCommerce payment integration",
     "Shopify payment integration Cyprus",
-    "API integration services Cyprus",
-    "Online payment troubleshooting Cyprus",
     "Business process automation Cyprus",
-    "AI automation for businesses Cyprus",
     "AI consulting Cyprus",
   ],
 };
