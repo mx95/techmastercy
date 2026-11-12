@@ -55,10 +55,12 @@ export function organizationJsonLd() {
     email: siteConfig.businessEmail,
     logo: absoluteUrl("/images/brand/emblem-black-on-white.png"),
     image: absoluteUrl("/images/brand/emblem-black-on-white.png"),
-    areaServed: {
-      "@type": "Country",
-      name: "Cyprus",
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "CY",
     },
+    // Cyprus HQ with international remote delivery — matches visible site copy.
+    areaServed: ["CY", "Worldwide"],
     knowsAbout: siteConfig.keywords,
     ...(sameAs.length ? { sameAs } : {}),
   };
@@ -111,7 +113,38 @@ export function serviceJsonLd(service: {
       name: siteConfig.name,
       url: siteConfig.url,
     },
-    areaServed: "CY",
+    areaServed: ["CY", "Worldwide"],
+  };
+}
+
+export function articleJsonLd(article: {
+  title: string;
+  description: string;
+  path: string;
+  publishedAt?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    mainEntityOfPage: absoluteUrl(article.path),
+    datePublished: article.publishedAt,
+    author: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/images/brand/emblem-black-on-white.png"),
+      },
+    },
+    inLanguage: "en",
   };
 }
 

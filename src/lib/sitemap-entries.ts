@@ -1,4 +1,5 @@
-import { articles } from "@/content/articles";
+import { getPublishedArticles } from "@/content/articles";
+import { seoLanders } from "@/content/seo-landers";
 import { servicePillars } from "@/content/service-pillars";
 import { services } from "@/content/services";
 
@@ -28,29 +29,39 @@ export type SitemapEntry = {
  * Public URL paths eligible for sitemap inclusion.
  * Keep this list aligned with real public routes as they ship.
  * Do not include outbound 308 shop aliases (e.g. PetPal).
+ * Draft articles are excluded via getPublishedArticles().
  */
 export function buildSitemapEntries(options?: {
   productSlugs?: string[];
 }): SitemapEntry[] {
   const entries: SitemapEntry[] = [
     { path: "/", changeFrequency: "weekly", priority: 1 },
-    { path: "/shop", changeFrequency: "daily", priority: 0.9 },
-    { path: "/services", changeFrequency: "weekly", priority: 0.9 },
+    { path: "/services", changeFrequency: "weekly", priority: 0.95 },
+    { path: "/contact", changeFrequency: "monthly", priority: 0.85 },
+    { path: "/articles", changeFrequency: "weekly", priority: 0.75 },
     { path: "/about", changeFrequency: "monthly", priority: 0.6 },
-    { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
-    { path: "/faq", changeFrequency: "monthly", priority: 0.6 },
-    { path: "/articles", changeFrequency: "weekly", priority: 0.7 },
+    { path: "/faq", changeFrequency: "monthly", priority: 0.55 },
+    // Hardware shop de-emphasised for services-led organic strategy.
+    { path: "/shop", changeFrequency: "weekly", priority: 0.4 },
     { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
     { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
     { path: "/refunds", changeFrequency: "yearly", priority: 0.3 },
     { path: "/licence", changeFrequency: "yearly", priority: 0.3 },
   ];
 
+  for (const lander of seoLanders) {
+    entries.push({
+      path: lander.path,
+      changeFrequency: "weekly",
+      priority: 0.92,
+    });
+  }
+
   for (const pillar of servicePillars) {
     entries.push({
       path: `/services/${pillar.slug}`,
       changeFrequency: "weekly",
-      priority: pillar.featured ? 0.95 : 0.9,
+      priority: pillar.featured ? 0.95 : 0.88,
     });
   }
 
@@ -62,11 +73,11 @@ export function buildSitemapEntries(options?: {
     });
   }
 
-  for (const article of articles) {
+  for (const article of getPublishedArticles()) {
     entries.push({
       path: `/articles/${article.slug}`,
       changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.65,
     });
   }
 
@@ -74,7 +85,7 @@ export function buildSitemapEntries(options?: {
     entries.push({
       path: `/shop/${slug}`,
       changeFrequency: "weekly",
-      priority: 0.8,
+      priority: 0.35,
     });
   }
 

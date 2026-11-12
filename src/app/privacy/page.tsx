@@ -39,6 +39,13 @@ export default function PrivacyPage() {
           submitted.
         </p>
         <p>
+          Optional analytics: if you accept analytics cookies, we may load Google Analytics 4 using
+          measurement ID from environment configuration to understand service-page demand and
+          successful enquiry events. Analytics storage defaults to denied until you choose Accept.
+          Advertising storage stays denied. You can decline the banner; no analytics script loads in
+          that case.
+        </p>
+        <p>
           This draft does not claim GDPR certification or list a data protection officer. Complete a
           jurisdiction-specific review before launch.
         </p>

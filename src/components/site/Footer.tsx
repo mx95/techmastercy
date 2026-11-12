@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrackedMailto } from "@/components/analytics/TrackedLink";
 import { BrandLogo } from "@/components/site/BrandLogo";
 import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
@@ -6,6 +7,15 @@ import { SocialLinks } from "@/components/site/SocialLinks";
 import { petpal } from "@/content/petpal";
 import { servicePillars } from "@/content/service-pillars";
 import { siteConfig } from "@/lib/config";
+
+const commercialLinks = [
+  { href: "/payment-integration", label: "Payment integration" },
+  { href: "/stripe-integration", label: "Stripe integration" },
+  { href: "/jcc-integration", label: "JCC integration" },
+  { href: "/payment-webhooks", label: "Payment webhooks" },
+  { href: "/3ds-integration", label: "3DS integration" },
+  { href: "/api-development", label: "API development" },
+];
 
 const companyLinks = [
   { href: "/about", label: "About" },
@@ -33,12 +43,12 @@ export function Footer() {
             connect applications and automate work that slows them down.
           </p>
           <p className="mt-4 text-sm">
-            <a
-              href={`mailto:${siteConfig.businessEmail}`}
+            <TrackedMailto
+              email={siteConfig.businessEmail}
               className="font-medium text-accent-soft transition-colors hover:text-accent"
             >
               {siteConfig.businessEmail}
-            </a>
+            </TrackedMailto>
           </p>
           <p className="mt-1 text-xs text-foreground-muted">
             Based in Cyprus · Available for international projects · EUR · English
@@ -74,6 +84,13 @@ export function Footer() {
                 All services
               </Link>
             </li>
+            {commercialLinks.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="transition-colors hover:text-accent-soft">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 

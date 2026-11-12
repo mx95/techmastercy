@@ -17,16 +17,17 @@ export const siteConfig = {
   description:
     "Payments and technology, made simpler. TechmasterCY helps businesses integrate payment systems, connect applications and automate work that slows them down.",
   keywords: [
-    "Payment gateway integration Cyprus",
-    "Payment integration services",
-    "JCC payment integration Cyprus",
-    "Stripe integration Cyprus",
-    "API development Cyprus",
-    "Custom software development Cyprus",
+    "Payment gateway integration services",
+    "Payment integration developer",
+    "Stripe integration services",
+    "JCC payment gateway integration",
+    "Payment webhook development",
+    "3DS integration",
+    "Payment troubleshooting services",
+    "API integration services",
     "WooCommerce payment integration",
-    "Shopify payment integration Cyprus",
-    "Business process automation Cyprus",
-    "AI consulting Cyprus",
+    "Custom software development",
+    "Payment solutions Cyprus",
   ],
 };
 

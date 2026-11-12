@@ -4,6 +4,7 @@ import { Button } from "@/components/site/Button";
 import { Container } from "@/components/site/Container";
 import { PaymentProvidersSection } from "@/components/site/PaymentProvidersSection";
 import { SectionHeading } from "@/components/site/SectionHeading";
+import { seoLanders } from "@/content/seo-landers";
 import {
   getPillarServices,
   servicePillars,
@@ -48,7 +49,7 @@ export default function ServicesPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={pillar.iconSrc}
-              alt=""
+              alt={`${pillar.navLabel} icon`}
               width={56}
               height={56}
               className="h-14 w-14"
@@ -70,6 +71,28 @@ export default function ServicesPage() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-14">
+        <h2 className="font-display text-2xl font-semibold text-white">
+          Popular payment &amp; API searches
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-foreground-muted">
+          Short commercial pages for common buyer queries. Deeper delivery packaging still lives
+          under each service detail URL.
+        </p>
+        <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+          {seoLanders.map((lander) => (
+            <li key={lander.path}>
+              <Link
+                href={lander.path}
+                className="text-accent-soft underline-offset-4 hover:underline"
+              >
+                {lander.h1}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="mt-12">
         <PaymentProvidersSection compact />

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { trackEvent } from "@/components/analytics/track";
 import { Button } from "@/components/site/Button";
 import { servicePillars } from "@/content/service-pillars";
 import { getService, services } from "@/content/services";
@@ -98,6 +99,12 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
       }
       setStatus("success");
       form.reset();
+      // Count successful API acceptance only — not mere button clicks.
+      trackEvent("generate_lead", {
+        method: "contact_form",
+        service: payload.service || "unspecified",
+        email_delivered: Boolean(data.emailDelivered),
+      });
       if (data.emailDelivered) {
         setMessage(
           "Thanks — your enquiry was saved and emailed to us. We will reply with next steps or clarifying questions.",

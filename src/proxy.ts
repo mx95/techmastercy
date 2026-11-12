@@ -6,6 +6,15 @@ import type { NextRequest } from "next/server";
  * Sets baseline security headers without interfering with static assets.
  */
 export function proxy(request: NextRequest) {
+  const host = (request.headers.get("host") || "").toLowerCase();
+  // Consolidate www → apex so organic signals do not split across hosts.
+  if (host === "www.techmaster.com.cy") {
+    const url = request.nextUrl.clone();
+    url.hostname = "techmaster.com.cy";
+    url.protocol = "https:";
+    return NextResponse.redirect(url, 308);
+  }
+
   const response = NextResponse.next();
 
   response.headers.set("X-Frame-Options", "DENY");

@@ -30,12 +30,9 @@ export async function generateMetadata({ params }: { params: Params }) {
       noIndex: true,
     });
   }
-  const title = /cyprus/i.test(service.title)
-    ? service.title
-    : `${service.title} Cyprus`;
   return createMetadata({
-    title,
-    description: `${service.summary} Serving businesses in Cyprus.`,
+    title: service.title,
+    description: `${service.summary} Cyprus-based team; international projects welcome.`,
     path: `/services/${service.slug}`,
   });
 }

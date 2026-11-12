@@ -13,6 +13,7 @@ describe("seo helpers", () => {
     expect(String(org.logo)).toMatch(/emblem-black-on-white\.png$/);
     expect(Array.isArray(org.sameAs)).toBe(true);
     expect(org.sameAs as string[]).toContain("https://www.instagram.com/techmastercy/");
+    expect(org.areaServed).toEqual(["CY", "Worldwide"]);
   });
 
   it("builds FAQPage structured data", () => {
