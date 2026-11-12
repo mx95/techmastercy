@@ -6,7 +6,8 @@ import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
   title: "Privacy policy",
-  description: "Draft privacy policy for TechmasterCY.",
+  description:
+    "How TechmasterCY handles enquiry, order and optional analytics data. Review status is noted on the page.",
   path: "/privacy",
 });
 

@@ -10,6 +10,7 @@ import { formatEur } from "@/lib/money";
 import {
   breadcrumbJsonLd,
   createMetadata,
+  faqJsonLd,
   serviceJsonLd,
 } from "@/lib/seo";
 
@@ -190,6 +191,7 @@ export default async function ServiceDetailPage({ params }: { params: Params }) 
             description: service.summary,
             path: `/services/${service.slug}`,
           }),
+          faqJsonLd(service.faqs),
         ]}
       />
     </Container>

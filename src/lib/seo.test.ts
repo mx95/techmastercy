@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { absoluteUrl, faqJsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
+import {
+  absoluteUrl,
+  createMetadata,
+  faqJsonLd,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 
 describe("seo helpers", () => {
   it("builds absolute URLs", () => {
@@ -27,5 +33,18 @@ describe("seo helpers", () => {
     const site = websiteJsonLd();
     expect(site["@type"]).toBe("WebSite");
     expect(site.name).toBe("TechmasterCY");
+  });
+
+  it("mirrors Open Graph images onto Twitter cards", () => {
+    const meta = createMetadata({
+      title: "Stripe integration",
+      description: "Test",
+      path: "/stripe-integration",
+      ogImage: "/images/brand/emblem-black-on-white.png",
+    });
+    const og = meta.openGraph as { images?: Array<{ url: string }> };
+    const tw = meta.twitter as { images?: string[] };
+    expect(og.images?.[0]?.url).toMatch(/emblem-black-on-white\.png$/);
+    expect(tw.images?.[0]).toMatch(/emblem-black-on-white\.png$/);
   });
 });

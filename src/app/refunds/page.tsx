@@ -5,7 +5,8 @@ import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
   title: "Refund policy",
-  description: "Draft refund policy for TechmasterCY products and services.",
+  description:
+    "Refund policy for TechmasterCY shop products and service engagements. Review status is noted on the page.",
   path: "/refunds",
 });
 

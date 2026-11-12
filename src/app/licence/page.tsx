@@ -5,7 +5,8 @@ import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
   title: "Digital product licence terms",
-  description: "Draft licence terms for TechmasterCY digital products.",
+  description:
+    "Licence terms for TechmasterCY digital products and downloads. Review status is noted on the page.",
   path: "/licence",
 });
 

@@ -47,6 +47,7 @@ const otherServices = servicePillars
     href: `/services/${pillar.slug}`,
     examples: pillar.examples,
     iconSrc: pillar.iconSrc,
+    iconAlt: pillar.iconAlt,
   }));
 
 const trustPoints = [
@@ -199,7 +200,7 @@ export default async function HomePage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={service.iconSrc}
-                      alt=""
+                      alt={service.iconAlt}
                       width={56}
                       height={56}
                       className="h-14 w-14 shrink-0"

@@ -19,6 +19,9 @@ export function createMetadata(options: {
   const title = options.title.includes(siteConfig.name)
     ? options.title
     : `${options.title} | ${siteConfig.name}`;
+  const imageUrl = absoluteUrl(
+    options.ogImage || "/images/brand/emblem-black-on-white.png",
+  );
 
   return {
     title,
@@ -32,14 +35,13 @@ export function createMetadata(options: {
       siteName: siteConfig.name,
       locale: "en_CY",
       type: "website",
-      images: options.ogImage
-        ? [{ url: absoluteUrl(options.ogImage) }]
-        : [{ url: absoluteUrl("/images/brand/emblem-black-on-white.png") }],
+      images: [{ url: imageUrl }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: options.description,
+      images: [imageUrl],
     },
   };
 }
