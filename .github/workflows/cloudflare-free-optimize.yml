@@ -1,0 +1,55 @@
+# Apply free Cloudflare zone settings + orange-cloud proxy via API token.
+# Bypasses Cursor Cloudflare MCP (auth popup can report "declined" even after Authorize).
+#
+# Requires production environment secrets:
+#   CLOUDFLARE_API_TOKEN  (Zone.DNS Edit + Zone.Zone Settings Edit + Zone.Zone Read)
+#   CLOUDFLARE_ZONE_ID    (optional)
+name: Cloudflare free optimize
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  optimize:
+    name: Apply free Cloudflare settings
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Require Cloudflare token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is missing in the production environment."
+            echo "Create a token with Zone.DNS Edit + Zone.Zone Settings Edit + Zone.Zone Read,"
+            echo "add it under GitHub → Settings → Environments → production → Secrets, then re-run."
+            exit 1
+          fi
+
+      - name: Apply free optimizations
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          DOMAIN: techmaster.com.cy
+        run: |
+          chmod +x deploy/cloudflare-free-optimize.sh
+          ./deploy/cloudflare-free-optimize.sh
+
+      - name: Verify edge proxy headers
+        run: |
+          set -euo pipefail
+          sleep 5
+          echo "Public headers for https://techmaster.com.cy/ :"
+          curl -sI --max-time 20 "https://techmaster.com.cy/" | tr -d '\r' | tee /tmp/cf-headers.txt
+          if grep -qi '^cf-ray:' /tmp/cf-headers.txt; then
+            echo "Cloudflare proxy is active (cf-ray present)."
+          else
+            echo "::warning::No cf-ray header yet — DNS/proxy may still be propagating, or token lacked DNS Edit."
+          fi
