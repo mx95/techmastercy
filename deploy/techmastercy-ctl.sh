@@ -112,6 +112,22 @@ compose_up() {
   wait_for_health 45
 }
 
+# Refresh host nginx when HTTPS certs already exist so free origin cache/gzip
+# improvements ship with every deploy without re-running enable-https.
+refresh_nginx_https_if_ready() {
+  local conf="${APP_DIR}/deploy/nginx-https.conf"
+  local live="/etc/letsencrypt/live/techmaster.com.cy/fullchain.pem"
+  [[ -f "${conf}" ]] || return 0
+  [[ -f "${live}" ]] || {
+    log "skipping nginx refresh (HTTPS certs not present yet)"
+    return 0
+  }
+  install -m 0644 "${conf}" /etc/nginx/sites-available/techmastercy
+  nginx -t
+  systemctl reload nginx
+  log "refreshed nginx HTTPS site config"
+}
+
 cmd_deploy() {
   require_root
   require_env
@@ -156,6 +172,7 @@ cmd_deploy() {
   printf '%s\n' "${target_sha}" > "${CURRENT_SHA_FILE}"
   # Keep a marker inside the data volume via env on next recreate; also local marker:
   printf '%s\n' "${target_sha}" > "${STATE_DIR}/last_success"
+  refresh_nginx_https_if_ready
   log "deploy succeeded: ${target_sha}"
 }
 
