@@ -1,4 +1,5 @@
 import { articles } from "@/content/articles";
+import { servicePillars } from "@/content/service-pillars";
 import { services } from "@/content/services";
 
 /** Paths that must never appear in the public sitemap. */
@@ -35,7 +36,6 @@ export function buildSitemapEntries(options?: {
     { path: "/", changeFrequency: "weekly", priority: 1 },
     { path: "/shop", changeFrequency: "daily", priority: 0.9 },
     { path: "/services", changeFrequency: "weekly", priority: 0.9 },
-    { path: "/services/ai-automation", changeFrequency: "weekly", priority: 0.9 },
     { path: "/about", changeFrequency: "monthly", priority: 0.6 },
     { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
     { path: "/faq", changeFrequency: "monthly", priority: 0.6 },
@@ -45,6 +45,14 @@ export function buildSitemapEntries(options?: {
     { path: "/refunds", changeFrequency: "yearly", priority: 0.3 },
     { path: "/licence", changeFrequency: "yearly", priority: 0.3 },
   ];
+
+  for (const pillar of servicePillars) {
+    entries.push({
+      path: `/services/${pillar.slug}`,
+      changeFrequency: "weekly",
+      priority: pillar.featured ? 0.95 : 0.9,
+    });
+  }
 
   for (const service of services) {
     entries.push({

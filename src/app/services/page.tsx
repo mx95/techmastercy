@@ -5,25 +5,18 @@ import { Container } from "@/components/site/Container";
 import { PaymentProvidersSection } from "@/components/site/PaymentProvidersSection";
 import { SectionHeading } from "@/components/site/SectionHeading";
 import {
-  serviceCategories,
-  services,
-  type ServiceCategory,
-} from "@/content/services";
-import { createMetadata } from "@/lib/seo";
+  getPillarServices,
+  servicePillars,
+} from "@/content/service-pillars";
 import { formatEur } from "@/lib/money";
+import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
-  title: "Services — payment integration, automation & AI Cyprus",
+  title: "Services — payments, software, AI & digital solutions",
   description:
-    "Payment gateway integration Cyprus, API and webhook work, business process automation, AI consulting and scoped technical support.",
+    "Explore TechmasterCY services: payment solutions, software and API development, AI and business automation, and digital solutions.",
   path: "/services",
 });
-
-const categoryOrder: ServiceCategory[] = [
-  "payments",
-  "integrations",
-  "ai-automation",
-];
 
 export default function ServicesPage() {
   return (
@@ -37,42 +30,78 @@ export default function ServicesPage() {
       <SectionHeading
         className="mt-6"
         eyebrow="Services"
-        title="Payment integrations, AI, automation and technical support"
-        description="Each engagement is scoped to your systems and constraints. Indicative prices are starting points—request a quote for a fixed estimate."
+        title="Integrate, build and improve your digital solutions"
+        description="Four clear service areas. Payment Solutions is the primary specialist focus; every engagement is scoped to your systems and constraints."
       />
 
-      <div className="surface mt-8 rounded-lg p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
-        <div>
-          <h2 className="font-display text-lg font-semibold">
-            AI, Automation & Technical Consulting
-          </h2>
-          <p className="mt-1 text-sm text-foreground-muted">
-            Practical AI adoption, process automation and scoped remote support—with clear oversight
-            expectations.
-          </p>
-        </div>
-        <Button href="/services/ai-automation" className="mt-4 w-full shrink-0 sm:mt-0 sm:w-auto">
-          Open AI & automation hub
-        </Button>
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        {servicePillars.map((pillar) => (
+          <Link
+            key={pillar.slug}
+            href={`/services/${pillar.slug}`}
+            className={`group flex h-full flex-col rounded-xl border p-5 transition sm:p-6 ${
+              pillar.featured
+                ? "border-accent/40 bg-accent-dim/25 hover:border-accent/60"
+                : "border-white/10 bg-background-elevated/70 hover:border-accent/45"
+            }`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={pillar.iconSrc}
+              alt=""
+              width={56}
+              height={56}
+              className="h-14 w-14"
+            />
+            {pillar.featured ? (
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-accent-soft">
+                Primary focus
+              </p>
+            ) : null}
+            <h2 className="mt-2 font-display text-xl font-semibold text-white group-hover:text-accent-soft sm:text-2xl">
+              {pillar.title}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-foreground-muted">
+              {pillar.summary}
+            </p>
+            <span className="mt-5 text-sm font-semibold text-accent-soft">
+              Learn more →
+            </span>
+          </Link>
+        ))}
       </div>
 
       <div className="mt-12">
         <PaymentProvidersSection compact />
       </div>
 
-      <div className="mt-12 space-y-12">
-        {categoryOrder.map((category) => {
-          const meta = serviceCategories[category];
-          const items = services.filter((s) => s.category === category);
+      <div className="mt-14 space-y-14">
+        {servicePillars.map((pillar) => {
+          const items = getPillarServices(pillar);
           return (
-            <section key={category}>
-              <h2 className="font-display text-2xl font-semibold text-white">{meta.title}</h2>
-              <p className="mt-2 max-w-2xl text-sm text-foreground-muted">{meta.description}</p>
+            <section key={pillar.slug}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="font-display text-2xl font-semibold text-white">
+                    {pillar.title}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm text-foreground-muted">
+                    {pillar.description}
+                  </p>
+                </div>
+                <Button
+                  href={`/services/${pillar.slug}`}
+                  variant="secondary"
+                  className="w-full shrink-0 sm:w-auto"
+                >
+                  Open {pillar.shortTitle}
+                </Button>
+              </div>
               <div className="mt-6 grid gap-4">
                 {items.map((service) => (
                   <article
-                    key={service.slug}
-                    className="surface rounded-lg p-6 md:flex md:items-start md:justify-between md:gap-8"
+                    key={`${pillar.slug}-${service.slug}`}
+                    className="border-b border-white/10 py-5 md:flex md:items-start md:justify-between md:gap-8"
                   >
                     <div className="max-w-2xl">
                       <h3 className="font-display text-xl font-semibold">
@@ -103,6 +132,19 @@ export default function ServicesPage() {
             </section>
           );
         })}
+      </div>
+
+      <div className="mt-16 border-t border-white/10 pt-12">
+        <h2 className="font-display text-3xl font-semibold text-white">
+          Have a project in mind?
+        </h2>
+        <p className="mt-3 max-w-2xl text-foreground-muted">
+          Tell us what you are trying to achieve. We will help you identify the right service area
+          and a practical next step.
+        </p>
+        <Button href="/contact" size="lg" className="mt-7 w-full sm:w-auto">
+          Start a conversation
+        </Button>
       </div>
     </Container>
   );

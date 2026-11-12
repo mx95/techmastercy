@@ -33,8 +33,8 @@ export default function AiAutomationLandingPage() {
       />
 
       <header className="mt-6 max-w-3xl">
-        <p className="text-xs uppercase tracking-[0.18em] text-accent">
-          AI, Automation & Technical Consulting
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-soft">
+          AI & Business Automation
         </p>
         <h1 className="mt-2 font-display text-4xl font-semibold text-white sm:text-5xl">
           Make AI and automation useful in real business workflows

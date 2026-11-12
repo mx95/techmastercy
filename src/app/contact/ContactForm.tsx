@@ -3,7 +3,26 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/site/Button";
-import { services } from "@/content/services";
+import { servicePillars } from "@/content/service-pillars";
+import { getService, services } from "@/content/services";
+
+/** Prefer the first pillar that owns a slug so the select has unique values. */
+function serviceSelectGroups() {
+  const seen = new Set<string>();
+  return servicePillars
+    .map((pillar) => {
+      const options = pillar.serviceSlugs
+        .filter((slug) => {
+          if (seen.has(slug)) return false;
+          seen.add(slug);
+          return true;
+        })
+        .map((slug) => getService(slug))
+        .filter((service): service is NonNullable<typeof service> => Boolean(service));
+      return { label: pillar.navLabel, options };
+    })
+    .filter((group) => group.options.length > 0);
+}
 
 const fieldClass =
   "mt-1 min-h-11 w-full max-w-full rounded-md border border-white/15 bg-background px-3 py-2.5 text-base sm:text-sm";
@@ -173,11 +192,27 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
             defaultValue={defaultService || "payment-gateway-integration"}
             className={fieldClass}
           >
-            {services.map((s) => (
-              <option key={s.slug} value={s.slug}>
-                {s.title}
-              </option>
+            {serviceSelectGroups().map((group) => (
+              <optgroup key={group.label} label={group.label}>
+                {group.options.map((s) => (
+                  <option key={s.slug} value={s.slug}>
+                    {s.title}
+                  </option>
+                ))}
+              </optgroup>
             ))}
+            {services
+              .filter(
+                (s) =>
+                  !servicePillars.some((pillar) =>
+                    pillar.serviceSlugs.includes(s.slug),
+                  ),
+              )
+              .map((s) => (
+                <option key={s.slug} value={s.slug}>
+                  {s.title}
+                </option>
+              ))}
             <option value="other">Other / not sure</option>
           </select>
         </div>
@@ -299,7 +334,7 @@ export function ContactForm({ defaultService }: { defaultService?: string }) {
           disabled={status === "loading"}
           aria-busy={status === "loading"}
         >
-          {status === "loading" ? "Sending…" : "Discuss Your Project"}
+          {status === "loading" ? "Sending…" : "Start a conversation"}
         </Button>
       </div>
     </form>
