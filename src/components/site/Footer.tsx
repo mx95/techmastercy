@@ -29,8 +29,8 @@ export function Footer() {
         <div className="sm:col-span-2 lg:col-span-1">
           <BrandLogo showTagline={false} />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-foreground-muted">
-            A technology and software engineering company helping businesses integrate, build and
-            improve their digital solutions—with payment integrations as a specialist focus.
+            Payments and technology, made simpler. We help businesses integrate payment systems,
+            connect applications and automate work that slows them down.
           </p>
           <p className="mt-4 text-sm">
             <a

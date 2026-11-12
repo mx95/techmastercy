@@ -88,7 +88,7 @@ export const services: ServicePage[] = [
       },
       {
         q: "Can you help choose a payment provider?",
-        a: "I can outline technical trade-offs. Provider selection also depends on your merchant account eligibility and commercial terms.",
+        a: "We can outline technical trade-offs. Provider selection also depends on your merchant account eligibility and commercial terms.",
       },
     ],
     relatedKeywords: ["Payment gateway integration Cyprus", "Custom online payment integration"],
