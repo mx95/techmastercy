@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   // Keep dynamic admin/shop routes request-time; Cache Components can force
   // surprising static shells around cookie/session boundaries.
   cacheComponents: false,
+  experimental: {
+    agentUpgrade: "security",
+  },
   images: {
     formats: ["image/avif", "image/webp"],
   },
