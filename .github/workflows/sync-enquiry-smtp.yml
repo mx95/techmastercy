@@ -1,0 +1,89 @@
+# Upsert enquiry email settings into the Hetzner production .env.
+# Values come from GitHub Environment "production" secrets (never logged).
+#
+# Required production secrets (same names as the app):
+#   BUSINESS_EMAIL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+name: Sync enquiry SMTP
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Update production .env SMTP keys
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Require SMTP secrets
+        env:
+          BUSINESS_EMAIL: ${{ secrets.BUSINESS_EMAIL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+        run: |
+          missing=0
+          for name in BUSINESS_EMAIL SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_FROM; do
+            eval "val=\${$name}"
+            if [ -z "${val}" ]; then
+              echo "::error::Missing production secret: ${name}"
+              missing=1
+            else
+              echo "Present: ${name} (value not shown)"
+            fi
+          done
+          exit "${missing}"
+
+      - name: Upsert keys on server
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          # Pass values as env to the remote script; do not echo them.
+          envs: BUSINESS_EMAIL,SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS,SMTP_FROM
+          script: |
+            set -euo pipefail
+            ENV_FILE="/opt/techmastercy/.env"
+            test -f "${ENV_FILE}"
+
+            upsert() {
+              local key="$1"
+              local value="$2"
+              # Escape for sed replacement (backslash and &).
+              local escaped
+              escaped="$(printf '%s' "${value}" | sed -e 's/[\\&]/\\&/g')"
+              if grep -q "^${key}=" "${ENV_FILE}"; then
+                sudo sed -i "s|^${key}=.*|${key}=\"${escaped}\"|" "${ENV_FILE}"
+              else
+                printf '%s="%s"\n' "${key}" "${value}" | sudo tee -a "${ENV_FILE}" >/dev/null
+              fi
+              echo "Updated key: ${key}"
+            }
+
+            upsert BUSINESS_EMAIL "${BUSINESS_EMAIL}"
+            upsert SMTP_HOST "${SMTP_HOST}"
+            upsert SMTP_PORT "${SMTP_PORT}"
+            upsert SMTP_USER "${SMTP_USER}"
+            upsert SMTP_PASS "${SMTP_PASS}"
+            upsert SMTP_FROM "${SMTP_FROM}"
+
+            sudo chown root:tmcdeploy "${ENV_FILE}"
+            sudo chmod 640 "${ENV_FILE}"
+
+            # Restart app so new env is picked up (compose reads .env).
+            sudo /usr/local/sbin/techmastercy-ctl deploy "$(sudo cat /opt/techmastercy/.deploy/current_sha)"
+            sudo /usr/local/sbin/techmastercy-ctl health
+        env:
+          BUSINESS_EMAIL: ${{ secrets.BUSINESS_EMAIL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
